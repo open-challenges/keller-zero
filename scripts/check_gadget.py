@@ -5,7 +5,7 @@ nonzero constant and which takes the same value at two different rational points
     python3 scripts/check_gadget.py submissions/<handle>/gadget.json [more.json ...]
 
 Everything is exact rational arithmetic from the standard library. The file is data: polynomials
-are read by the small parser below (numbers, variable names, + - * ^ and parentheses), never
+are read by the small parser below (numbers, variable names, + - * / ^ and parentheses), never
 evaluated as code. Prints one JSON verdict per file; exit code 0 when every file passes.
 
 The scores: `degree` is the largest total degree of a coordinate, `variables` is the number of
@@ -15,12 +15,12 @@ import json
 import re
 import sys
 from fractions import Fraction
-from itertools import combinations
 
-MAX_VARIABLES = 12         # the determinant is expanded exactly, over column sets
+MAX_VARIABLES = 64         # the determinant is expanded exactly; see determinant()
+MAX_MINORS = 200_000       # minors remembered while expanding it
 MAX_TERMS = 200_000        # of any polynomial met on the way
 MAX_BYTES = 1_000_000      # of a gadget file
-TOKEN = re.compile(r"\s*(?:(\d+(?:/\d+)?)|([A-Za-z_][A-Za-z_0-9]*)|(\*\*|[-+*^()]))")
+TOKEN = re.compile(r"\s*(?:(\d+)|([A-Za-z_][A-Za-z_0-9]*)|(\*\*|[-+*/^()]))")
 
 
 class Refused(Exception):
@@ -88,7 +88,7 @@ def p_degree(a):
 
 def parse(text, names):
     """A polynomial from text. Grammar: sum of products of powers; ^ or ** takes a plain
-    non-negative whole number; a number is digits or digits/digits."""
+    non-negative whole number; / divides by a positive whole number (3/2*x, x^2/12)."""
     n = len(names)
     tokens, at = [], 0
     while at < len(text):
@@ -143,9 +143,15 @@ def parse(text, names):
 
     def product():
         v = power()
-        while peek() == "*":
+        while peek() in ("*", "/"):
+            if take() == "*":
+                v = p_mul(v, power())
+                continue
+            d = peek()
+            if d is None or not d.isdigit() or int(d) == 0:
+                raise Refused("division is by a positive whole number only, as in x^2/12")
             take()
-            v = p_mul(v, power())
+            v = p_mul(v, p_const(Fraction(1, int(d)), n))
         return v
 
     def total():
@@ -161,22 +167,118 @@ def parse(text, names):
     return v
 
 
+def expand(rows, n, index):
+    """Exact determinant of the square submatrix on the rows and columns in `index`: expansion
+    along the row or column with the fewest nonzero entries, remembering every minor met."""
+    memo = {}
+
+    def minor(rs, cs):
+        if not rs:
+            return p_const(1, n)
+        key = (rs, cs)
+        if key in memo:
+            return memo[key]
+        best = None
+        for r in rs:
+            cols = [c for c in cs if rows[r][c]]
+            if best is None or len(cols) < len(best[2]):
+                best = ("row", r, cols)
+        for c in cs:
+            rws = [r for r in rs if rows[r][c]]
+            if len(rws) < len(best[2]):
+                best = ("col", c, rws)
+        kind, line, others = best
+        total = {}
+        for o in others:
+            r, c = (line, o) if kind == "row" else (o, line)
+            sign = 1 if (rs.index(r) + cs.index(c)) % 2 == 0 else -1
+            rest = minor(tuple(i for i in rs if i != r), tuple(i for i in cs if i != c))
+            if rest:
+                total = p_add(total, p_mul(rows[r][c], rest), sign)
+        memo[key] = total
+        if len(memo) > MAX_MINORS:
+            raise Refused("the determinant needs more than %d minors; this checker cannot decide it" % MAX_MINORS)
+        return total
+
+    return minor(tuple(index), tuple(index))
+
+
 def determinant(rows, n):
-    """Exact determinant of an n by n matrix of polynomials, by expansion over column sets."""
-    best = {frozenset(): p_const(1, n)}
-    for r in range(n - 1, -1, -1):
-        nxt = {}
-        for cols in combinations(range(n), n - r):
-            total = {}
-            for k, c in enumerate(cols):
-                entry = rows[r][c]
-                if not entry:
-                    continue
-                rest = frozenset(cols) - {c}
-                total = p_add(total, p_mul(entry, best[rest]), 1 if k % 2 == 0 else -1)
-            nxt[frozenset(cols)] = total
-        best = nxt
-    return best[frozenset(range(n))]
+    """Exact determinant of an n by n matrix of polynomials. The rows are first reordered to put
+    a nonzero entry on every diagonal place, then the matrix is cut into the blocks of its
+    block triangular form (the strongly connected components of "row i has an entry in column
+    j"); the determinant is the product of the determinants of the diagonal blocks, each
+    expanded exactly. Nothing is estimated: a map of many variables is checked this way because
+    its Jacobian matrix is sparse."""
+    # 1. a nonzero entry for every column, from different rows (augmenting paths)
+    row_of = [None] * n
+
+    def place(r, seen):
+        for c in range(n):
+            if rows[r][c] and c not in seen:
+                seen.add(c)
+                if row_of[c] is None or place(row_of[c], seen):
+                    row_of[c] = r
+                    return True
+        return False
+
+    for r in range(n):
+        if not place(r, set()):
+            return {}
+    sign, seen = 1, [False] * n
+    for c in range(n):                      # the sign of the reordering, by its cycles
+        length = 0
+        while not seen[c]:
+            seen[c] = True
+            c = row_of[c]
+            length += 1
+        if length and length % 2 == 0:
+            sign = -sign
+    m = [rows[row_of[c]] for c in range(n)]
+    # 2. strongly connected components, one after another (Tarjan, without recursion)
+    index, low, on, stack, blocks, count = [None] * n, [0] * n, [False] * n, [], [], [0]
+    for root in range(n):
+        if index[root] is not None:
+            continue
+        work = [(root, 0)]
+        while work:
+            v, k = work.pop()
+            if k == 0:
+                index[v] = low[v] = count[0]
+                count[0] += 1
+                stack.append(v)
+                on[v] = True
+            advanced = False
+            for w in range(k, n):
+                if w != v and m[v][w]:
+                    if index[w] is None:
+                        work.append((v, w + 1))
+                        work.append((w, 0))
+                        advanced = True
+                        break
+                    if on[w]:
+                        low[v] = min(low[v], index[w])
+            if advanced:
+                continue
+            if low[v] == index[v]:
+                block = []
+                while True:
+                    w = stack.pop()
+                    on[w] = False
+                    block.append(w)
+                    if w == v:
+                        break
+                blocks.append(sorted(block))
+            if work:
+                parent = work[-1][0]
+                low[parent] = min(low[parent], low[v])
+    # 3. the product of the blocks' determinants
+    total = p_const(sign, n)
+    for block in blocks:
+        total = p_mul(total, expand(m, n, block))
+        if not total:
+            break
+    return total
 
 
 def show(q):
