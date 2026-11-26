@@ -1,0 +1,64 @@
+name: verify
+
+# Every push and pull request: the gadget checker's tests, every gadget in submissions/, the
+# Lean files on the pinned Mathlib, and the count of open statements proved.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gadgets:
+    name: Gadgets (exact arithmetic)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/test_check_gadget.py
+      - run: python3 scripts/check_gadget.py submissions/*/gadget.json
+      - run: python3 scripts/ns_degree.py 2
+
+  lean:
+    name: Lean (the checked chain and the open statements)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Mathlib's cache
+        working-directory: lean
+        run: lake exe cache get
+      - name: Build
+        working-directory: lean
+        run: lake build
+      - name: The checked chain's axioms, and the open statements proved
+        run: python3 scripts/check_proofs.py
+
+  entry:
+    name: An entry touches only its own files
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: |
+          other="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -vE '^(submissions/[A-Za-z0-9_-]+/|lean/KellerZero/Proofs/[A-Za-z0-9_]+\.lean$)' || true)"
+          if [ -n "$other" ]; then
+            echo "This pull request changes files outside submissions/<handle>/ and lean/KellerZero/Proofs/:"
+            echo "$other"
+            exit 1
+          fi
