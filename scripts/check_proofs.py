@@ -17,10 +17,13 @@ import subprocess
 import sys
 import tempfile
 
-NAMES = ["ImageIsComplementOfCurve", "ReductionMapIsKeller", "QuadraticKellerMapsAreInjective"]
+NAMES = ["ImageIsComplementOfCurve", "ReductionMapIsKeller", "QuadraticKellerMapsAreInjective",
+         "CubicGadgetIsKeller", "QuadraticKellerMapsAreBijective", "FibreCount"]
 # The chain that is checked already: each must build and rest on the three axioms only.
 CHECKED = ["det_jacobian", "jacobian_conjecture_fails_dim_three", "fibre_zero", "omitted_curve",
-           "exists_zero_reductionMap_iff_satisfiable", "hitsTarget_iff_satisfiable"]
+           "exists_zero_reductionMap_iff_satisfiable", "hitsTarget_iff_satisfiable",
+           "mem_fibre_iff_simple_root", "image_complex", "image_real", "scaling",
+           "cubic_fibre", "cubicPoly_not_injective", "threeSAT_reduces_to_keller_zero"]
 ALLOWED = {"propext", "Classical.choice", "Quot.sound"}
 LEAN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lean")
 

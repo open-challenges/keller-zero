@@ -4,6 +4,11 @@
 [pequalnp.com](https://pequalnp.com), written for anyone who wants to pick it up. The problem
 statement and the scoreboard are in [PROBLEM.md](PROBLEM.md).
 
+**Since this note was written**, three of its open points were settled: the image of the gadget
+(3.1), the Jacobian determinant of the map of the reduction, and the lowest degree at which the
+problem is NP-hard. They are in [FINDINGS.md](FINDINGS.md), and the text below is updated to
+match.
+
 Every claim below carries one of five labels.
 
 | Label | Meaning |
@@ -46,7 +51,8 @@ The gadget is `F = (P, Q, R)` with `u = 1 + xy`:
 | No point `(t^2/12, t, 4/(3t))`, `t ≠ 0`, is a value of `F` | `omitted_curve`, `H_omitted_curve` | Lean |
 | Stambler's map `K_φ`, as integer polynomials, has a zero over a field of characteristic zero exactly when `φ` is satisfiable | `exists_zero_reductionMap_iff_satisfiable` | Lean |
 | One map for all formulas on a list of clauses; the formula enters only through a 0/1 target | `hitsTarget_iff_satisfiable` | Lean |
-| `det JK_φ = (-3456)^(n+m)` | `Open.ReductionMapIsKeller` | Paper (block triangular), open in Lean |
+| `det JK_φ = (-3456)^(n+m)` | `Proofs.ReductionMapIsKeller` | Lean |
+| All of it as one statement | `threeSAT_reduces_to_keller_zero` | Lean |
 
 The Lean reduction theorem holds over every field of characteristic zero, the complex numbers
 included, not only over the reals.
@@ -59,15 +65,13 @@ rescaled coordinates `H = 12F + (3, 0, 0)`. It lies on a curve of omitted values
     F never takes the value (t^2/12, t, 4/(3t)),  t ≠ 0            (Lean)
     H never takes the value (t^2 + 3, 12t, 16/t), t ≠ 0            (Lean; Δ is t = 2)
 
-Over the complex numbers nothing else is omitted (Computed: `P = a` with `u ≠ 0` turns `Q = b`
-and `R = c` into two equations in `x` and `u` whose resultant is
-`a u^3 (D u^3 + (b^2 - 12a) u - 4a)` with `D = 27a^2c^2 - 18abc + 16a + b^3c - b^2`; it has no
-root exactly when `b^2 = 12a` and `3bc = 4`; 29 targets off the curve and 6 on it agree, by
-Gröbner bases; [`scripts/omitted_set.py`](scripts/omitted_set.py)). That is the open statement
-O1. It fits a general fact (Paper): a Keller map
-over the complex numbers never omits a hypersurface `{g = 0}`, because `g ∘ F` would be a
-polynomial with no zero, hence constant, and `F` would map into `{g = c}`. So omitted sets have
-codimension at least two; here the set is a curve in three-space.
+Over the complex numbers nothing else is omitted, and the same holds over the real numbers
+(Lean: `image_complex`, `image_real`). The reason is in [FINDINGS.md](FINDINGS.md): a target
+`(a, b, c)` with `c ≠ 0` is a value exactly when the cubic `m³ - 2m² + bc·m - 2ac²` has a
+simple root, and the curve is where that cubic is a perfect cube. It fits a general fact
+(Paper): a Keller map over the complex numbers never omits a hypersurface `{g = 0}`, because
+`g ∘ F` would be a polynomial with no zero, hence constant, and `F` would map into `{g = c}`.
+So omitted sets have codimension at least two; here the set is a curve in three-space.
 
 **3.2 One map, all formulas.** Take every possible clause `c` on `n` variables, a new
 coordinate `λ_c` and a witness block `v_c`, and the map
@@ -131,21 +135,24 @@ what the generic problem lacks, but they need not be small: the Keller map
 
 ## 5. First units
 
-Each is one exact statement; the three marked O are already written in
-[`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean).
+Each is one exact statement. Four were settled here after the note was first written; the
+statements still to prove in Lean are in [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean).
 
-| Kind | Statement |
-|---|---|
-| prove (O1) | Over the complex numbers the gadget omits the curve and nothing else |
-| prove (O2) | `det JK_φ = (-3456)^(n+m)` for the polynomial map `reductionMap φ` |
-| prove (O3) | A Keller map of degree at most two is injective (Wang, 1980): the floor of the degree track |
-| value | The least Nullstellensatz degree for the target `Δ` of the gadget (computed: 10) |
-| value | The same for `K_φ` with `φ = x ∧ ¬x` (9 variables), against the standard encoding of the same formula |
-| search | A non-injective Keller map of degree below 7 in three variables |
-| search | Any non-injective Keller map in two variables (this would settle the plane Jacobian conjecture) |
-| prove | 3SAT reduces to the zero problem for Keller maps of degree 3 (expected through the reduction of Bass, Connell and Wright; degree 2 is impossible by O3) |
-| prove | The omitted set of the gadget over the reals |
-| open | Is the zero problem for Keller maps in NP, over the complex numbers or over the reals? |
+| Kind | Statement | Status |
+|---|---|---|
+| prove (O1) | Over the complex numbers the gadget omits the curve and nothing else | Lean |
+| prove (O2) | `det JK_φ = (-3456)^(n+m)` for the polynomial map `reductionMap φ` | Lean |
+| prove (O3) | A Keller map of degree at most two is injective (Wang, 1980) | Lean |
+| prove | 3SAT reduces to the zero problem for Keller maps of degree 3 | Computed and Paper: FINDINGS.md, section 2 |
+| prove | The omitted set of the gadget over the reals | Lean: the same curve |
+| prove (O4) | The Jacobian determinant of the 12-variable map of degree 3 is `-2` | Computed; open in Lean |
+| prove (O5) | A Keller map of degree at most two is a bijection | Known; open in Lean |
+| value | The least Nullstellensatz degree for the target `Δ` of the gadget (computed: 10) | open |
+| value | The same for `K_φ` with `φ = x ∧ ¬x` (9 variables), against the standard encoding of the same formula | open |
+| search | A non-injective Keller map of degree 3 in fewer than 12 variables | open |
+| search | A non-injective Keller map of degree below 7 in three variables | open |
+| search | Any non-injective Keller map in two variables (this would settle the plane Jacobian conjecture) | open |
+| open | Is the zero problem for Keller maps in NP, over the complex numbers or over the reals? | open |
 
 ## 6. When to stop
 

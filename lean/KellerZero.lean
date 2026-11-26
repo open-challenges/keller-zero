@@ -1,3 +1,10 @@
 import KellerZero.Gadget
 import KellerZero.Reduction
+import KellerZero.Structure
+import KellerZero.Cubic
 import KellerZero.Open
+import KellerZero.Proofs.ImageIsComplementOfCurve
+import KellerZero.Proofs.ReductionMapIsKeller
+import KellerZero.Proofs.QuadraticKellerMapsAreInjective
+import KellerZero.Proofs.FibreCount
+import KellerZero.Summary

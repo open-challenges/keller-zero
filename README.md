@@ -10,20 +10,32 @@ a 3CNF formula becomes a polynomial map with constant Jacobian that has a zero e
 formula is satisfiable. A question conjectured to have the same answer every time is NP-hard.
 
 - [PROBLEM.md](PROBLEM.md): the tracks, the rules, how to enter.
-- [DIRECTION.md](DIRECTION.md): the research direction, with what is proved, what is computed and
-  what is open, and how far it goes toward P vs NP.
+- [FINDINGS.md](FINDINGS.md): what has been found here.
+- [DIRECTION.md](DIRECTION.md): the research direction, and how far it goes toward P vs NP.
 - [AGENTS.md](AGENTS.md): the short version for coding agents.
+
+## Found here
+
+1. **The gadget is one cubic in disguise.** A target `(a, b, c)` with `c ≠ 0` is a value of
+   Alpöge's map exactly when `m³ - 2m² + bc·m - 2ac²` has a simple root, and the fibre has as
+   many points as that cubic has simple roots. So over ℂ and over ℝ the map misses exactly one
+   curve, where the cubic is a perfect cube. Proved in Lean.
+2. **NP-hardness starts at degree 3, the lowest possible.** An explicit map of degree 3 in 12
+   variables with Jacobian determinant -2 and the fibres of the gadget (exact arithmetic; the
+   fibres in Lean) makes the reduction work at degree 3, in `12n + 15m` variables. At degree 2
+   every such map is injective (Lean), so the problem is trivial there.
+3. **Stambler's theorem is machine-checked end to end**, as one Lean statement.
 
 ## Leaderboard
 
 | Track | Record | Entry | Date |
 |---|---|---|---|
-| `degree`: lowest degree of a gadget | 7 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
-| `variables`: fewest variables of a gadget | 3 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
-| `open-statements`: open statements proved | 0 of 3 | none yet | |
+| `cubic-variables`: fewest variables at degree 3 | 12 (baseline) | [The gadget at degree 3](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-26 |
+| `degree-3d`: lowest degree in three variables | 7 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
+| `variables`: fewest variables | 3 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
+| `open-statements`: statements proved | 4 of 6 (baseline) | [O1, O2, O3, O6](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-26 |
 
-Degree 2 is impossible, and an entry with 2 variables would settle the plane Jacobian
-conjecture.
+An entry with 2 variables would settle the plane Jacobian conjecture.
 
 ## Checked in Lean
 
@@ -32,23 +44,25 @@ CI rebuilds everything on every push.
 
 | Theorem ([`lean/KellerZero`](lean/KellerZero)) | Says |
 |---|---|
-| `det_jacobian` | The Jacobian determinant of the gadget is -2 |
-| `jacobian_conjecture_fails_dim_three` | A map with constant Jacobian determinant that is not injective, over every field of characteristic zero |
-| `fibre_zero` | The gadget takes the value (-1/4, 0, 0) at exactly three points |
-| `omitted_curve` | The gadget never takes a value (t²/12, t, 4/(3t)), t ≠ 0 |
-| `exists_zero_reductionMap_iff_satisfiable` | The map built from a formula has a zero exactly when the formula is satisfiable |
+| `threeSAT_reduces_to_keller_zero` | The map built from a formula has Jacobian determinant `(-3456)^(n+m)` and a zero exactly when the formula is satisfiable |
+| `det_jacobian`, `jacobian_conjecture_fails_dim_three` | The gadget has Jacobian determinant -2 and is not injective |
+| `mem_fibre_iff_simple_root`, `Proofs.FibreCount` | The fibres of the gadget are the simple roots of a cubic |
+| `image_complex`, `image_real`, `omitted_curve` | The gadget misses one curve and nothing else |
+| `cubic_fibre`, `cubicPoly_not_injective` | The 12-variable map of degree 3 has the fibres of the gadget |
+| `Proofs.QuadraticKellerMapsAreInjective` | Degree two is injective |
 | `hitsTarget_iff_satisfiable` | One map for all formulas: the formula enters only through the target |
 
-Open, stated in [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean): the gadget misses
-nothing but the curve (O1), the map of the reduction has constant Jacobian determinant (O2),
-and maps of degree two are injective (O3).
+Open in Lean, stated in [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean): the Jacobian
+determinant of the 12-variable map (O4, checked by exact arithmetic), and bijectivity at degree
+two (O5).
 
 ## Try it
 
 ```bash
 git clone https://github.com/open-challenges/keller-zero && cd keller-zero
-python3 scripts/check_gadget.py submissions/alpoge-stambler/gadget.json   # exact, no installs
-cd lean && lake exe cache get && lake build && cd ..                      # Lean through elan
+python3 scripts/check_gadget.py submissions/*/gadget.json     # exact, no installs
+python3 scripts/lower_degree.py gadget 4                      # the gadget at degree 4, 7 variables
+cd lean && lake exe cache get && lake build && cd ..          # Lean through elan
 python3 scripts/check_proofs.py
 ```
 
@@ -56,7 +70,8 @@ python3 scripts/check_proofs.py
 
 The gadget is Levent Alpöge's map
 ([announcement](https://x.com/__alpoge__/status/2079028340955197566)); the reduction is Lev
-Stambler's ([alg-geom-TCS](https://github.com/Lev-Stambler/alg-geom-TCS), MIT). The Lean proofs,
-the checkers and the note were written with Claude. MIT license.
+Stambler's ([alg-geom-TCS](https://github.com/Lev-Stambler/alg-geom-TCS), MIT); lowering the
+degree is the method of Bass, Connell and Wright. The Lean proofs, the findings, the checkers
+and the notes were written with Claude. MIT license.
 
 Listed on [Open Challenge List](https://openchallengelist.com).

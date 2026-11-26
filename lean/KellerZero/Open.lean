@@ -1,15 +1,25 @@
 import KellerZero.Reduction
+import KellerZero.Structure
+import KellerZero.Cubic
 import Mathlib.Analysis.Complex.Basic
 
 /-!
-# Open statements
+# Statements to prove
 
-Each `def ... : Prop` below is a statement nobody has checked in this repository yet. To enter
-the `checked` track, add a file under `KellerZero/Proofs/` that proves one of them exactly as
-stated (`theorem ... : KellerZero.Open.<Name> := ...`), with no `sorry` and no new axiom.
+Each `def ... : Prop` below is a statement put up to be proved. To enter the `open-statements`
+track, add `KellerZero/Proofs/<Name>.lean` proving one of them exactly as stated
+(`theorem KellerZero.Proofs.<Name> : KellerZero.Open.<Name>`), with no `sorry` and no new axiom.
 
 Nothing in this file is assumed anywhere: these are definitions of propositions, not axioms.
-What is already proved about each one is stated next to it.
+
+| | Statement | Status |
+|---|---|---|
+| O1 | `ImageIsComplementOfCurve` | proved, `Proofs/ImageIsComplementOfCurve.lean` |
+| O2 | `ReductionMapIsKeller` | proved, `Proofs/ReductionMapIsKeller.lean` |
+| O3 | `QuadraticKellerMapsAreInjective` | proved, `Proofs/QuadraticKellerMapsAreInjective.lean` |
+| O4 | `CubicGadgetIsKeller` | open in Lean (checked by exact arithmetic) |
+| O5 | `QuadraticKellerMapsAreBijective` | open in Lean (Wang, 1980) |
+| O6 | `FibreCount` | open in Lean (proved on paper in FINDINGS.md) |
 -/
 
 namespace KellerZero.Open
@@ -21,7 +31,7 @@ open MvPolynomial
 /-! ## O1. The image of the gadget over the complex numbers -/
 
 /-- O1. Over the complex numbers the gadget misses the curve of `omitted_curve` and nothing
-else. Computer algebra (a resultant, then spot checks with Gröbner bases) says yes. -/
+else. -/
 def ImageIsComplementOfCurve : Prop :=
   ∀ a b c : ℂ, (∃ x y z : ℂ, P x y z = a ∧ Q x y z = b ∧ R x y z = c) ↔
     ¬ ∃ t : ℂ, t ≠ 0 ∧ a = t ^ 2 / 12 ∧ b = t ∧ c = 4 / (3 * t)
@@ -52,5 +62,34 @@ def QuadraticKellerMapsAreInjective : Prop :=
   ∀ (N : ℕ) (F : Fin N → MvPolynomial (Fin N) ℚ), (∀ i, (F i).totalDegree ≤ 2) →
     IsUnit (Matrix.of fun i j => pderiv j (F i)).det →
     Function.Injective fun v : Fin N → ℚ => fun i => eval v (F i)
+
+/-! ## O4. The gadget at degree three is a Keller map -/
+
+/-- O4. The Jacobian determinant of the twelve-variable map of degree three is the constant
+`-2`. Exact rational arithmetic says so (`scripts/check_gadget.py`), and on paper the map is the
+gadget composed with two triangular maps. In Lean it is a twelve by twelve determinant of
+polynomials. -/
+def CubicGadgetIsKeller : Prop :=
+  (Matrix.of fun i j => pderiv j (cubicPoly ℤ i)).det = C (-2)
+
+/-! ## O5. Degree two: not only injective -/
+
+/-- O5. A polynomial map of degree at most two whose Jacobian determinant is a nonzero constant
+is a bijection (Wang, 1980: it has a polynomial inverse). With O3 this says that the question
+"is there a zero?" has the answer yes, exactly one, at degree two. -/
+def QuadraticKellerMapsAreBijective : Prop :=
+  ∀ (N : ℕ) (F : Fin N → MvPolynomial (Fin N) ℚ), (∀ i, (F i).totalDegree ≤ 2) →
+    IsUnit (Matrix.of fun i j => pderiv j (F i)).det →
+    Function.Bijective fun v : Fin N → ℚ => fun i => eval v (F i)
+
+/-! ## O6. Counting the fibre -/
+
+/-- O6. Over the complex numbers, a target `(a, b, c)` with `c ≠ 0` has exactly as many
+preimages under the gadget as its cubic has simple roots: three, one or none.
+`mem_fibre_iff_simple_root` is the statement that one set is empty exactly when the other is. -/
+def FibreCount : Prop :=
+  ∀ a b c : ℂ, c ≠ 0 →
+    Set.ncard {p : ℂ × ℂ × ℂ | P p.1 p.2.1 p.2.2 = a ∧ Q p.1 p.2.1 p.2.2 = b ∧ R p.1 p.2.1 p.2.2 = c}
+      = Set.ncard {m : ℂ | cubic a b c m = 0 ∧ cubicDeriv b c m ≠ 0}
 
 end KellerZero.Open

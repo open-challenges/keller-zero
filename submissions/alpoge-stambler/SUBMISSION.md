@@ -7,7 +7,7 @@ date: 2026-11-26
 baseline: true
 
 results:
-  - track: degree
+  - track: degree-3d
     value: 7
   - track: variables
     value: 3

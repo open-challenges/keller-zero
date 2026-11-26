@@ -1,7 +1,7 @@
 name: verify
 
-# Every push and pull request: the gadget checker's tests, every gadget in submissions/, the
-# Lean files on the pinned Mathlib, and the count of open statements proved.
+# Every push and pull request: the checkers' tests, every gadget in submissions/, the Lean
+# files on the pinned Mathlib, and the count of statements proved.
 
 on:
   push:
@@ -22,7 +22,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: python3 scripts/test_check_gadget.py
+      - run: python3 scripts/test_lower_degree.py
       - run: python3 scripts/check_gadget.py submissions/*/gadget.json
+      - run: python3 scripts/lower_degree.py gadget 3 | diff - submissions/SecurityQQ/gadget.json
       - run: python3 scripts/ns_degree.py 2
 
   lean:
