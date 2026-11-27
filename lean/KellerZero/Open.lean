@@ -17,9 +17,9 @@ Nothing in this file is assumed anywhere: these are definitions of propositions,
 | O1 | `ImageIsComplementOfCurve` | proved, `Proofs/ImageIsComplementOfCurve.lean` |
 | O2 | `ReductionMapIsKeller` | proved, `Proofs/ReductionMapIsKeller.lean` |
 | O3 | `QuadraticKellerMapsAreInjective` | proved, `Proofs/QuadraticKellerMapsAreInjective.lean` |
-| O4 | `CubicGadgetIsKeller` | open in Lean (checked by exact arithmetic) |
+| O4 | `CubicGadgetIsKeller` | proved, `Proofs/CubicGadgetIsKeller.lean` |
 | O5 | `QuadraticKellerMapsAreBijective` | open in Lean (Wang, 1980) |
-| O6 | `FibreCount` | open in Lean (proved on paper in FINDINGS.md) |
+| O6 | `FibreCount` | proved, `Proofs/FibreCount.lean` |
 -/
 
 namespace KellerZero.Open
@@ -67,8 +67,8 @@ def QuadraticKellerMapsAreInjective : Prop :=
 
 /-- O4. The Jacobian determinant of the twelve-variable map of degree three is the constant
 `-2`. Exact rational arithmetic says so (`scripts/check_gadget.py`), and on paper the map is the
-gadget composed with two triangular maps. In Lean it is a twelve by twelve determinant of
-polynomials. -/
+gadget composed with two triangular maps. Proved through `KellerZero.Wire`: the map is a wire
+extension of the gadget. -/
 def CubicGadgetIsKeller : Prop :=
   (Matrix.of fun i j => pderiv j (cubicPoly ℤ i)).det = C (-2)
 

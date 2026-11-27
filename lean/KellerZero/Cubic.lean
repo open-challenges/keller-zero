@@ -11,9 +11,10 @@ obtained from the gadget by the reduction of Bass, Connell and Wright (the const
   exactly when `(a, b, c)` is a value of the gadget;
 * `cubicPoly_not_injective`: so it takes the same value at two points.
 
-That its Jacobian determinant is the constant `-2` is checked by exact arithmetic
-(`scripts/check_gadget.py submissions/SecurityQQ/gadget.json`), and in Lean it is the open
-statement `KellerZero.Open.CubicGadgetIsKeller`.
+That its Jacobian determinant is the constant `-2` is the statement
+`KellerZero.Open.CubicGadgetIsKeller`, proved in `Proofs/CubicGadgetIsKeller.lean`. A map of
+degree three with one variable fewer, published earlier by others, is in `Cubic11.lean`; the
+reduction at degree three (`CubicReduction.lean`) uses that one.
 -/
 
 namespace KellerZero

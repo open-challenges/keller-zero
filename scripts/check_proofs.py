@@ -23,7 +23,11 @@ NAMES = ["ImageIsComplementOfCurve", "ReductionMapIsKeller", "QuadraticKellerMap
 CHECKED = ["det_jacobian", "jacobian_conjecture_fails_dim_three", "fibre_zero", "omitted_curve",
            "exists_zero_reductionMap_iff_satisfiable", "hitsTarget_iff_satisfiable",
            "mem_fibre_iff_simple_root", "image_complex", "image_real", "scaling",
-           "cubic_fibre", "cubicPoly_not_injective", "threeSAT_reduces_to_keller_zero"]
+           "cubic_fibre", "cubicPoly_not_injective", "threeSAT_reduces_to_keller_zero",
+           "pderiv_bind₁", "det_wireExt", "det_cubic11Map", "totalDegree_cubic11Map",
+           "cubic11Map_not_injective", "threeSAT_reduces_to_cubic_keller_zero",
+           "keller_zero_hard_exactly_from_degree_three", "curve_certificate", "not_on_curve",
+           "target_certificate", "zeros_of_H", "det_jacobian_bilinearMap", "refutation_of_formula"]
 ALLOWED = {"propext", "Classical.choice", "Quot.sound"}
 LEAN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lean")
 

@@ -12,11 +12,12 @@ from lower_degree import WIRES, formula, gadget  # noqa: E402
 
 def main():
     # the gadget at every degree: exact Jacobian determinant -2, two points with one value
-    for degree in (6, 5, 4, 3):
+    for degree in (6, 5, 4, 3, "twelve"):
         v = check(gadget(degree))
-        assert v["ok"] and v["degree"] == degree and v["variables"] == 3 + WIRES[degree] and v["jacobian"] == "-2", v
+        want = 3 if degree == "twelve" else degree
+        assert v["ok"] and v["degree"] == want and v["variables"] == 3 + WIRES[degree] and v["jacobian"] == "-2", v
         assert v["value"][:3] == ["-1/4", "0", "0"] and set(v["value"][3:]) == {"0"}, v
-        print("gadget: degree %d in %d variables" % (degree, v["variables"]))
+        print("gadget: degree %d in %d variables" % (want, v["variables"]))
     # the map of the reduction at degree 3; x1 false, x2 true satisfies the first formula
     r0, r1 = (0, 0, Fraction(-1, 4)), (1, Fraction(-3, 2), Fraction(13, 2))
     for clauses, good, bad in [([(1, 1, 2), (-1, 2, 2)], r0 + r1, r1 + r0),
@@ -24,7 +25,7 @@ def main():
         start = time.time()
         L, coords, n, m = formula(clauses)
         N = len(L.ring.names)
-        assert N == 12 * n + 15 * m and all(c.degree() <= 3 for c in coords)
+        assert N == 11 * n + 14 * m and all(c.degree() <= 3 for c in coords)
         jac = determinant([[p_diff(c.terms, j) for j in range(N)] for c in coords], N)
         assert jac == {(0,) * N: Fraction(-3456) ** (n + m)}, jac
         # a satisfying assignment gives a zero (witness blocks at the point with x = 0) ...
