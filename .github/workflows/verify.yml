@@ -23,9 +23,15 @@ jobs:
           python-version: "3.12"
       - run: python3 scripts/test_check_gadget.py
       - run: python3 scripts/test_lower_degree.py
-      - run: python3 scripts/check_gadget.py submissions/*/gadget.json
+      - run: python3 scripts/check_gadget.py submissions/*/gadget.json submissions/SecurityQQ/quartic.json submissions/SecurityQQ/twelve.json
       - run: python3 scripts/lower_degree.py gadget 3 | diff - submissions/SecurityQQ/gadget.json
+      - run: python3 scripts/lower_degree.py gadget 4 | diff - submissions/SecurityQQ/quartic.json
+      - run: python3 scripts/lower_degree.py gadget twelve | diff - submissions/SecurityQQ/twelve.json
       - run: python3 scripts/ns_degree.py 2
+      - run: python3 scripts/certificates.py
+      - run: python3 scripts/recognition.py
+      - run: python3 scripts/witness.py
+      - run: python3 scripts/count_zeros.py
 
   lean:
     name: Lean (the checked chain and the open statements)

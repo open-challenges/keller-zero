@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Lower the degree of a map with constant Jacobian determinant by adding variables.
 
-    python3 scripts/lower_degree.py gadget 3          # the gadget at degree 3 (12 variables)
+    python3 scripts/lower_degree.py gadget 3          # the gadget at degree 3 (10 variables)
     python3 scripts/lower_degree.py gadget 4|5|6      # 7, 6 and 5 variables
+    python3 scripts/lower_degree.py gadget eleven     # degree 3 with the wires of the published 11-variable map
+    python3 scripts/lower_degree.py gadget twelve     # an earlier degree 3, with 12 variables
     python3 scripts/lower_degree.py formula "1 2 3, -1 -2 -3"   # the map of the reduction at degree 3
 
 Prints a gadget.json. `formula` takes clauses of three literals, variable k as k and its
@@ -22,6 +24,14 @@ F(x) = a and t is that solution: G has the fibres of F, point for point.
 
 The choice of l, q and p is what keeps every coordinate of G within the degree: it is made by
 hand below, and the degree of the result is asserted, not assumed.
+
+At degree 3 seven wires suffice: d, k, a, h, e, q, s, found for this repository on 27 November
+2026; the map is `cubic10Map` in lean/KellerZero/Cubic10.lean. The variant `eleven` uses the
+eight wires of the eleven-variable map published on 20 July 2026 (gist
+Spacerat/08b4a43f6b6ca57178efabc220170ce8), in the order d, a, b, c, h, k, q, s; that map is
+`cubic11Map` in lean/KellerZero/Cubic11.lean. The saving of the seven-wire map is the wire k,
+which stands for x z + 3 y and serves both Q and R = 2 x - x^2 (x z + 3 y). The wires at degrees
+4, 5, 6 and the nine-wire variant `twelve` were also found for this repository.
 """
 import json
 import os
@@ -169,7 +179,7 @@ def gadget_wires(L, x, y, z, degree):
     assert (P - (u ** 2 * E + u * Y ** 2)).terms == {} and (Q - (Y + 3 * X * Y ** 2 + 3 * X * u * E)).terms == {}
     k = len(L.wires)
     t = lambda i: L.t[k + i]
-    if degree >= 7:
+    if degree == 7:
         return [P, Q, R], None
     if degree == 6:
         # P = A + (x y) A with A = u E + y^2 of degree 5: one product of two wires.
@@ -192,6 +202,33 @@ def gadget_wires(L, x, y, z, degree):
         m = L.wire(t(1) * Y)
         return [P - ku * kE + m * kX, Q - 3 * kX * kE, R], None
     if degree == 3:
+        d = L.wire(-X * Y)                                   # t1 - x y
+        kw = L.wire(-X * Z - 3 * Y)                           # t2 - (x z + 3 y)
+        a = L.wire(-t(0) ** 2 + 2 * t(0) * X * Y)            # with the square of d: t3 + x^2 y^2
+        h = L.wire(-X ** 2)                                  # t4 - x^2
+        e = L.wire(-X * Y * Z - 3 * Y ** 2 - Z)              # t5 - E
+        q = L.wire(-3 * X * Y * t(1) - 3 * t(0) * t(1) - 6 * X * Z)   # t6: what Q's products leave
+        s = L.wire(-X * Y * t(4) - 2 * X * Y * Z - t(0) * t(4) + Z * t(2) - 2 * Z * t(0) - 7 * Y ** 2)   # t7: P's
+        assert (a + d * d - (t(2) + X ** 2 * Y ** 2)).terms == {}
+        newP = P - (-(a * e) - d * d * e + d * s)
+        newQ = Q - (-3 * a * kw - 3 * d * d * kw + d * q)
+        newR = R - (-(h * kw))
+        return [newP, newQ, newR], h
+    if degree == "eleven":
+        d = L.wire(-X * Y)                                   # t1 - x y
+        a = L.wire(-t(0) ** 2 + 2 * t(0) * X * Y)            # with the square of d: t2 + x^2 y^2
+        b = L.wire(3 * X ** 2 * Y)                           # t3 + 3 x^2 y
+        c = L.wire(X * Y * Z + 3 * Y ** 2 + 2 * Z)           # t4 + E + z
+        h = L.wire(-X ** 2)                                  # t5 - x^2
+        kz = L.wire(X * Z)                                   # t6 + x z
+        q = L.wire(t(2) * Z + 3 * t(3) * X)                  # t7: what Q's products leave
+        s = L.wire(t(1) * Z + t(3) * X * Y - X * Y * Z - 7 * Y ** 2 + t(3) * t(0) - t(0) * Z)   # t8: P's
+        assert (a + d * d - (t(1) + X ** 2 * Y ** 2)).terms == {}
+        newP = P - (a * c + c * d * d + d * s)
+        newQ = Q - (b * c + d * q)
+        newR = R - h * kz
+        return [newP, newQ, newR], h
+    if degree == "twelve":
         a = L.wire(X * Y)                                    # t1: x y
         kX = L.wire(X * u)                                   # t2: x u
         kE = L.wire(E)                                       # t3: E
@@ -210,13 +247,13 @@ def gadget_wires(L, x, y, z, degree):
     raise ValueError("degree 3 to 7")
 
 
-WIRES = {7: 0, 6: 2, 5: 3, 4: 4, 3: 9}
+WIRES = {7: 0, 6: 2, 5: 3, 4: 4, 3: 7, "eleven": 8, "twelve": 9}
 
 
 def gadget(degree):
     L = Lowering(["x", "y", "z"], WIRES[degree])
     mains, _ = gadget_wires(L, "x", "y", "z", degree)
-    coords = L.finish(mains, degree)
+    coords = L.finish(mains, degree if isinstance(degree, int) else 3)
     points = [L.above(p) for p in FIBRE]
     return {"variables": L.ring.names, "map": [c.text() for c in coords],
             "points": [[show(v) for v in p] for p in points]}
@@ -224,28 +261,29 @@ def gadget(degree):
 
 def formula(clauses):
     """The map of Stambler's reduction for a 3CNF formula, at degree 3. Blocks: three variables
-    and a gadget's nine wires for every variable of the formula and for every clause; three
-    more wires per clause for the product of its three literal values. 12 n + 15 m in all."""
+    and a gadget's seven wires for every variable of the formula and for every clause; three
+    more wires per clause for the product of its three literal values. 10 n + 13 m in all.
+    The same map is `cubicReduction` in lean/KellerZero/CubicReduction.lean."""
     n = max(abs(l) for c in clauses for l in c)
     m = len(clauses)
     xn = ["w%d%s" % (i + 1, s) for i in range(n) for s in "xyz"] + ["v%d%s" % (j + 1, s) for j in range(m) for s in "xyz"]
-    L = Lowering(xn, 9 * (n + m) + 3 * m)
+    L = Lowering(xn, 7 * (n + m) + 3 * m)
     mains, squares = [], []
     for i in range(n):
-        g, c = gadget_wires(L, "w%dx" % (i + 1), "w%dy" % (i + 1), "w%dz" % (i + 1), 3)
-        squares.append((c, L.t[len(L.wires) - 2], L.ring.var("w%dx" % (i + 1)) ** 2))   # wire, its t, what it carries
+        g, h = gadget_wires(L, "w%dx" % (i + 1), "w%dy" % (i + 1), "w%dz" % (i + 1), 3)
+        squares.append((h, L.t[len(L.wires) - 4], L.ring.var("w%dx" % (i + 1)) ** 2))   # the wire t - x^2, its t, x^2
         mains += [12 * g[0] + 3, 12 * g[1], 12 * g[2]]
     delta = [7, 24, 8]
     for j, clause in enumerate(clauses):
         g, _ = gadget_wires(L, "v%dx" % (j + 1), "v%dy" % (j + 1), "v%dz" % (j + 1), 3)
-        # literal k is false exactly when f_k = 0 ... the clause fails when f1 f2 f3 = 1, where
+        # literal k is false exactly when f_k = 1 ... the clause fails when f1 f2 f3 = 1, where
         # f = 1 - x^2 for a positive literal and x^2 for a negative one.
         F, f, e, tv = [], [], [], []
         for lit in clause:
             wire, tvar, sq = squares[abs(lit) - 1]
-            F.append(1 - wire if lit > 0 else wire)          # in terms of the wire
+            F.append(1 + wire if lit > 0 else -wire)         # in terms of the wire
             f.append(1 - sq if lit > 0 else sq)              # the polynomial it carries
-            e.append(-1 if lit > 0 else 1)                   # F = f + e t
+            e.append(1 if lit > 0 else -1)                   # F = f + e t
             tv.append(tvar)
         base = len(L.wires)
         g12 = L.wire(-(e[0] * tv[0] * f[1] + e[1] * tv[1] * f[0] + e[0] * e[1] * tv[0] * tv[1]), F[0] * F[1])   # t + f1 f2
@@ -265,8 +303,8 @@ def formula(clauses):
 
 
 def main(argv):
-    if len(argv) == 2 and argv[0] == "gadget" and argv[1] in "3456":
-        print(json.dumps(gadget(int(argv[1])), indent=2))
+    if len(argv) == 2 and argv[0] == "gadget" and argv[1] in ("3", "4", "5", "6", "eleven", "twelve"):
+        print(json.dumps(gadget(int(argv[1]) if argv[1].isdigit() else argv[1]), indent=2))
         return 0
     if len(argv) == 2 and argv[0] == "formula":
         clauses = [tuple(int(l) for l in c.split()) for c in argv[1].split(",")]

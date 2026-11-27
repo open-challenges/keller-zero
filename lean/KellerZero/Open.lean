@@ -1,7 +1,9 @@
 import KellerZero.Reduction
 import KellerZero.Structure
 import KellerZero.Cubic
+import KellerZero.Refutation
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Data.ZMod.Basic
 
 /-!
 # Statements to prove
@@ -17,9 +19,11 @@ Nothing in this file is assumed anywhere: these are definitions of propositions,
 | O1 | `ImageIsComplementOfCurve` | proved, `Proofs/ImageIsComplementOfCurve.lean` |
 | O2 | `ReductionMapIsKeller` | proved, `Proofs/ReductionMapIsKeller.lean` |
 | O3 | `QuadraticKellerMapsAreInjective` | proved, `Proofs/QuadraticKellerMapsAreInjective.lean` |
-| O4 | `CubicGadgetIsKeller` | open in Lean (checked by exact arithmetic) |
+| O4 | `CubicGadgetIsKeller` | proved, `Proofs/CubicGadgetIsKeller.lean` |
 | O5 | `QuadraticKellerMapsAreBijective` | open in Lean (Wang, 1980) |
-| O6 | `FibreCount` | open in Lean (proved on paper in FINDINGS.md) |
+| O6 | `FibreCount` | proved, `Proofs/FibreCount.lean` |
+| O7 | `WitnessIsSound` | open in Lean (Hensel's lemma and the Nullstellensatz; COMPLEXITY.md, Theorem 2) |
+| O8 | `RefutationOfMap` | proved, `Proofs/RefutationOfMap.lean` |
 -/
 
 namespace KellerZero.Open
@@ -67,8 +71,8 @@ def QuadraticKellerMapsAreInjective : Prop :=
 
 /-- O4. The Jacobian determinant of the twelve-variable map of degree three is the constant
 `-2`. Exact rational arithmetic says so (`scripts/check_gadget.py`), and on paper the map is the
-gadget composed with two triangular maps. In Lean it is a twelve by twelve determinant of
-polynomials. -/
+gadget composed with two triangular maps. Proved through `KellerZero.Wire`: the map is a wire
+extension of the gadget. -/
 def CubicGadgetIsKeller : Prop :=
   (Matrix.of fun i j => pderiv j (cubicPoly ℤ i)).det = C (-2)
 
@@ -91,5 +95,29 @@ def FibreCount : Prop :=
   ∀ a b c : ℂ, c ≠ 0 →
     Set.ncard {p : ℂ × ℂ × ℂ | P p.1 p.2.1 p.2.2 = a ∧ Q p.1 p.2.1 p.2.2 = b ∧ R p.1 p.2.1 p.2.2 = c}
       = Set.ncard {m : ℂ | cubic a b c m = 0 ∧ cubicDeriv b c m ≠ 0}
+
+/-! ## O7. A zero modulo a prime proves a complex zero -/
+
+/-- O7. If a square system of integer polynomials has a zero modulo a prime `p` at which its
+Jacobian determinant is not zero modulo `p`, then it has a complex zero. On paper: Hensel's
+lemma lifts the zero to the `p`-adic integers, so the system has a solution in a field of
+characteristic zero, and then, by the Nullstellensatz, a complex one. This is what makes "does a
+map with constant Jacobian determinant have a complex zero?" a problem with short proofs. -/
+def WitnessIsSound : Prop :=
+  ∀ (N p : ℕ) (_ : Fact p.Prime) (F : Fin N → MvPolynomial (Fin N) ℤ) (a : Fin N → ZMod p),
+    (∀ i, aeval a (F i) = 0) →
+    (Matrix.of fun i j => aeval a (pderiv j (F i))).det ≠ 0 →
+    ∃ x : Fin N → ℂ, ∀ i, aeval x (F i) = 0
+
+/-! ## O8. A refutation of the formula gives a refutation of its map -/
+
+/-- O8. The converse of `refutation_of_formula`, up to a constant: a Nullstellensatz refutation
+of degree `d` of the equations of a formula gives one of degree at most `2 d + c` of the
+equations of its map. On paper `c = 18` works: substitute the square of the first variable of
+every block, and use `quartic_certificate` and `target_certificate`. The proof in
+`Proofs/RefutationOfMap.lean` gives `c = 24`. -/
+def RefutationOfMap : Prop :=
+  ∃ c : ℕ, ∀ (n m : ℕ) (φ : Fin m → Clause n) (d : ℕ),
+    NSRefutation (formulaAxioms φ) d → NSRefutation (kellerAxioms φ) (2 * d + c)
 
 end KellerZero.Open
