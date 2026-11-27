@@ -32,8 +32,10 @@ Nobody has proved P = NP this way, and nothing here is a lower bound on computat
    Counting zeros is #P-hard. (Proofs on paper, from published theorems.)
 3. **Recognising such a map is identity testing**: in coRP, and as hard as testing whether a
    determinant of linear forms is constant, already at degree 2.
-4. **Refuting the map is as hard as refuting the formula**, for Nullstellensatz, polynomial
-   calculus and sums of squares: no easier (Lean) and at most twice as hard.
+4. **Refuting the map is as hard as refuting the formula**: a Nullstellensatz refutation of one
+   gives one of the other, with the same degree one way and at most twice the degree plus 24
+   the other way (Lean, both ways). The same on paper for polynomial calculus and sums of
+   squares.
 5. **Seven variables at degree 4**, one fewer than the published eight.
 
 A first version of this page also listed the description of the gadget by a cubic. That was
@@ -48,7 +50,7 @@ published by others on 20 July 2026; what is here is its proof in Lean.
 | `quartic-variables`: fewest variables at degree 4 | 7 (baseline) | [Degree 4 in seven variables](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
 | `degree-3d`: lowest degree in three variables | 7 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
 | `variables`: fewest variables | 3 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
-| `open-statements`: statements proved | 5 of 8 (baseline) | [O1, O2, O3, O4, O6](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
+| `open-statements`: statements proved | 6 of 8 (baseline) | [O1, O2, O3, O4, O6, O8](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
 
 An entry with 2 variables would settle the plane Jacobian conjecture.
 
@@ -64,7 +66,7 @@ CI rebuilds everything on every push.
 | `threeSAT_reduces_to_keller_zero` | Stambler's theorem, degree 7 |
 | `pderiv_bind₁`, `det_wireExt`, `aeval_wireExt_eq_zero_iff` | The chain rule, and that adding wires changes neither the Jacobian determinant nor the zeros |
 | `det_cubic11Map`, `totalDegree_cubic11Map`, `cubic11Map_not_injective` | The eleven-variable map of degree 3 |
-| `refutation_of_formula` | A refutation of the map gives a refutation of the formula of no larger degree |
+| `refutation_of_formula`, `Proofs.RefutationOfMap` | A refutation of the map gives a refutation of the formula of no larger degree, and conversely with at most twice the degree plus 24 |
 | `det_jacobian_bilinearMap` | The Jacobian determinant of `(x, y) ↦ (x, M(x)y)` is `det M(x)` |
 | `curve_certificate`, `target_certificate`, `zeros_of_H` | Explicit certificates: the omitted curve and the three zeros of the gadget |
 | `det_jacobian`, `jacobian_conjecture_fails_dim_three` | The gadget has Jacobian determinant -2 and is not injective |
@@ -72,8 +74,7 @@ CI rebuilds everything on every push.
 | `hitsTarget_iff_satisfiable` | One map for all formulas: the formula enters only through the target |
 
 Open in Lean, stated in [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean): bijectivity at
-degree two (O5), that a zero modulo a prime gives a complex zero (O7), and the converse
-direction for refutations (O8).
+degree two (O5), and that a zero modulo a prime gives a complex zero (O7).
 
 ## Try it
 

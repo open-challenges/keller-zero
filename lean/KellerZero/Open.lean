@@ -23,7 +23,7 @@ Nothing in this file is assumed anywhere: these are definitions of propositions,
 | O5 | `QuadraticKellerMapsAreBijective` | open in Lean (Wang, 1980) |
 | O6 | `FibreCount` | proved, `Proofs/FibreCount.lean` |
 | O7 | `WitnessIsSound` | open in Lean (Hensel's lemma and the Nullstellensatz; COMPLEXITY.md, Theorem 2) |
-| O8 | `RefutationOfMap` | open in Lean (proved on paper in COMPLEXITY.md, Theorem 5 (b)) |
+| O8 | `RefutationOfMap` | proved, `Proofs/RefutationOfMap.lean` |
 -/
 
 namespace KellerZero.Open
@@ -114,7 +114,8 @@ def WitnessIsSound : Prop :=
 /-- O8. The converse of `refutation_of_formula`, up to a constant: a Nullstellensatz refutation
 of degree `d` of the equations of a formula gives one of degree at most `2 d + c` of the
 equations of its map. On paper `c = 18` works: substitute the square of the first variable of
-every block, and use `quartic_certificate` and `target_certificate`. -/
+every block, and use `quartic_certificate` and `target_certificate`. The proof in
+`Proofs/RefutationOfMap.lean` gives `c = 24`. -/
 def RefutationOfMap : Prop :=
   ∃ c : ℕ, ∀ (n m : ℕ) (φ : Fin m → Clause n) (d : ℕ),
     NSRefutation (formulaAxioms φ) d → NSRefutation (kellerAxioms φ) (2 * d + c)

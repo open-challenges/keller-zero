@@ -23,6 +23,8 @@ theorem const (c : R) : (C c : MvPolynomial σ R).totalDegree ≤ 0 := (totalDeg
 
 theorem one : (1 : MvPolynomial σ R).totalDegree ≤ 0 := totalDegree_one.le
 
+theorem zero : (0 : MvPolynomial σ R).totalDegree ≤ 0 := totalDegree_zero.le
+
 theorem ofNat (n : ℕ) [n.AtLeastTwo] : (OfNat.ofNat n : MvPolynomial σ R).totalDegree ≤ 0 := by
   rw [← map_ofNat (C : R →+* MvPolynomial σ R) n]
   exact (totalDegree_C _).le
@@ -69,6 +71,7 @@ macro "td" : tactic =>
     | exact KellerZero.Deg.var _
     | exact KellerZero.Deg.const _
     | exact KellerZero.Deg.one
+    | exact KellerZero.Deg.zero
     | exact KellerZero.Deg.ofNat _
     | assumption
     | exact KellerZero.Deg.rename _ (by assumption)

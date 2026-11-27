@@ -1,7 +1,7 @@
 ---
 spec: submission.md/v1
 problem: ../../PROBLEM.md
-title: Degree 4 in seven variables, and five statements
+title: Degree 4 in seven variables, and six statements
 author: SecurityQQ
 date: 2026-11-27
 baseline: true
@@ -10,8 +10,8 @@ results:
   - track: quartic-variables
     value: 7
   - track: open-statements
-    value: 5
-    notes: O1, O2, O3, O4 and O6
+    value: 6
+    notes: O1, O2, O3, O4, O6 and O8
 
 agent:
   model: Claude Fable 5.2
@@ -53,7 +53,8 @@ determinant is `-2` was the open statement O4.
 ## The statements
 
 Proofs of O1 (the image of the gadget over ℂ), O2 (the map of the reduction is a Keller map),
-O3 (degree two is injective), O4 (the twelve-variable map is a Keller map) and O6 (the fibre
-has as many points as the cubic has simple roots) are in `lean/KellerZero/Proofs/`.
+O3 (degree two is injective), O4 (the twelve-variable map is a Keller map), O6 (the fibre has
+as many points as the cubic has simple roots) and O8 (a refutation of a formula gives one of
+its map) are in `lean/KellerZero/Proofs/`.
 [FINDINGS.md](../../FINDINGS.md) says what is new in them and what is a formalisation of
 published results.

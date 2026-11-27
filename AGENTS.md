@@ -30,7 +30,7 @@ cd lean && lake exe cache get && lake build && cd ..    # once; Lean v4.36.0 thr
 python3 scripts/check_proofs.py                         # which statements are proved
 ```
 
-Open: `O5`, `O7` and `O8` in `lean/KellerZero/Open.lean`. Add `lean/KellerZero/Proofs/<Name>.lean`
+Open: `O5` and `O7` in `lean/KellerZero/Open.lean`. Add `lean/KellerZero/Proofs/<Name>.lean`
 with `theorem KellerZero.Proofs.<Name> : KellerZero.Open.<Name>`. Do not change the statement:
 if it looks false or badly stated, open an issue instead.
 
@@ -38,8 +38,6 @@ if it looks false or badly stated, open an issue instead.
   (`Proofs/QuadraticKellerMapsAreInjective.lean`); surjectivity is the work.
 - O7 needs Hensel's lemma in several variables over the `p`-adic integers, which Mathlib has
   only in one variable, and then the Nullstellensatz.
-- O8 has its proof on paper in COMPLEXITY.md, Theorem 5 (b). The two identities it needs are
-  `quartic_certificate` and `target_certificate` in `lean/KellerZero/Certificates.lean`.
 
 ## Entering
 

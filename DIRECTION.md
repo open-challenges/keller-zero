@@ -165,13 +165,13 @@ statements still to prove in Lean are in [`lean/KellerZero/Open.lean`](lean/Kell
 | prove (O4) | The Jacobian determinant of the 12-variable map of degree 3 is `-2` | Lean |
 | prove (O5) | A Keller map of degree at most two is a bijection | Known; open in Lean |
 | value | The least Nullstellensatz degree for the target `Δ` of the gadget (computed: 10) | an exact certificate of degree 10 is in Lean; that 9 is impossible is Computed modulo a prime |
-| value | The same for `K_φ` with `φ = x ∧ ¬x` (9 variables), against the standard encoding of the same formula | at most 24 (Computed), and at least 7, the degree of the system; in general between the formula's degree (Lean) and twice it plus 18 (Paper) |
+| value | The same for `K_φ` with `φ = x ∧ ¬x` (9 variables), against the standard encoding of the same formula | at most 24 (Computed), and at least 7, the degree of the system; in general between the formula's degree and twice it plus 24 (Lean both ways; plus 18 on paper) |
 | search | A non-injective Keller map of degree 3 in fewer than 12 variables | Known: 11, published 20 July 2026; fewer is open |
 | search | A non-injective Keller map of degree below 7 in three variables | open |
 | search | Any non-injective Keller map in two variables (this would settle the plane Jacobian conjecture) | open |
 | open | Is the zero problem for Keller maps in NP, over the complex numbers or over the reals? | complex: yes, under the generalized Riemann hypothesis (Paper); real: open |
 | prove (O7) | A zero modulo a prime at which the Jacobian determinant is not zero gives a complex zero | Paper; open in Lean |
-| prove (O8) | A refutation of the formula gives one of its map of at most twice the degree plus a constant | Paper; open in Lean |
+| prove (O8) | A refutation of the formula gives one of its map of at most twice the degree plus a constant | Lean |
 
 ## 6. When to stop
 

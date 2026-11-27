@@ -49,8 +49,8 @@ tracks:
     metric: statements proved
     unit: statements
     direction: maximize
-    baseline: 5
-    description: How many of the statements in lean/KellerZero/Open.lean have a Lean proof in the repository, exactly as stated, from the three standard axioms. Five of the eight are proved; three are open.
+    baseline: 6
+    description: How many of the statements in lean/KellerZero/Open.lean have a Lean proof in the repository, exactly as stated, from the three standard axioms. Six of the eight are proved; two are open.
 
 submit:
   how: pull-request
@@ -67,7 +67,7 @@ quickstart: |
   git clone https://github.com/open-challenges/keller-zero && cd keller-zero
   python3 scripts/check_gadget.py submissions/*/gadget.json    # 11 variables at degree 3, 7 at degree 4, degree 7 in three: the numbers to beat
   cd lean && lake exe cache get && lake build && cd ..         # the checked chain
-  python3 scripts/check_proofs.py                              # statements proved: 5 of 8
+  python3 scripts/check_proofs.py                              # statements proved: 6 of 8
 ---
 
 # Keller Zero
@@ -96,7 +96,7 @@ In [`lean/KellerZero`](lean/KellerZero), on Lean v4.36.0 and Mathlib `fc4f59e5`,
 | `Proofs.QuadraticKellerMapsAreInjective` | A Keller map of degree at most two is injective, so degree 3 is where hardness starts |
 | `det_wireExt`, `aeval_wireExt_eq_zero_iff` | Lowering the degree by adding wires never changes the Jacobian determinant or the zeros |
 | `det_cubic11Map`, `cubic11Map_not_injective` | The eleven-variable map of degree 3 is a Keller map and is not injective |
-| `refutation_of_formula` | A Nullstellensatz refutation of "the map has no zero" gives one of the formula, of no larger degree |
+| `refutation_of_formula`, `Proofs.RefutationOfMap` | A Nullstellensatz refutation of "the map has no zero" gives one of the formula of no larger degree, and conversely with at most twice the degree plus 24 |
 | `det_jacobian_bilinearMap` | The map `(x, y) ↦ (x, M(x)y)` has Jacobian determinant `det M(x)`: recognising Keller maps contains identity testing |
 | `mem_fibre_iff_simple_root`, `image_complex`, `image_real`, `curve_certificate` | The gadget is one cubic in disguise and misses exactly one curve, over ℂ and over ℝ |
 
@@ -132,13 +132,12 @@ The entries of de Bondt are cited from [arXiv:2610.24889](https://arxiv.org/abs/
 are not rebuilt in this repository.
 
 **`open-statements`: prove what is stated.** [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean)
-states propositions as definitions, with nothing assumed. Five are proved. Three are open:
+states propositions as definitions, with nothing assumed. Six are proved. Two are open:
 
 | | Statement | On paper |
 |---|---|---|
 | O5 | `QuadraticKellerMapsAreBijective`: a Keller map of degree at most two is a bijection | Wang, 1980 |
 | O7 | `WitnessIsSound`: a zero modulo a prime at which the Jacobian determinant is not zero gives a complex zero | Hensel's lemma and the Nullstellensatz; COMPLEXITY.md, Theorem 2 |
-| O8 | `RefutationOfMap`: a refutation of a formula gives one of its map, of at most twice the degree plus a constant | COMPLEXITY.md, Theorem 5 (b) |
 
 Your score is the number proved in the repository once your entry is merged.
 

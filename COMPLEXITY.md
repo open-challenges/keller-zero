@@ -20,7 +20,7 @@ Inputs are polynomials with integer coefficients, written as lists of terms.
 | Does `F` have a complex zero? Degree 3 and up | NP-hard | NP, assuming the generalized Riemann hypothesis | §2, §3 |
 | How many zeros? | #P-hard | | §4 |
 | Does `F` have a real zero? A rational one? | NP-hard | the existential theory of the reals; decidable | §2 |
-| Certificates that there is no zero: degree in Nullstellensatz, polynomial calculus, sums of squares | linear in the number of variables, for some maps | twice the formula's, plus 18 | §6 |
+| Certificates that there is no zero: degree in Nullstellensatz, polynomial calculus, sums of squares | the formula's; so linear in the number of variables, for some maps | twice the formula's, plus 18 | §6 |
 | Is `F` a counterexample to the Jacobian conjecture (not injective)? | | NP, assuming the same hypothesis | §7 |
 
 So, with the hypothesis: **deciding whether a Keller map has a complex zero is NP-complete, and
@@ -228,12 +228,14 @@ ones.
 (a) (Lean: `refutation_of_formula`) `d(E(φ)) ≤ d(K_φ)` for Stambler's map `K_φ`: a refutation
 of the map gives a refutation of the formula of no larger degree.
 
-(b) (Paper; Computed on one formula: `scripts/certificates.py`) `d(K_φ) ≤ 2·d(E(φ)) + 18`.
+(b) (Lean: `Proofs.RefutationOfMap`, with 24 in place of 18; Paper for 18; Computed on one
+formula: `scripts/certificates.py`) `d(K_φ) ≤ 2·d(E(φ)) + 18`.
 
 (c) (Paper) For the map of degree 3: `d(E(φ)) ≤ 5·d(cubicReduction φ) + 2`.
 
 The same three inequalities hold, with the same proofs, for the degree of polynomial calculus
-refutations over the rationals and of sum-of-squares refutations over the reals.
+refutations over the rationals and of sum-of-squares refutations over the reals (Paper; the
+Lean proofs are for Nullstellensatz).
 
 (d) (Paper) The substitutions in the proofs are given by formulas of constant size per block.
 So they also turn a certificate of the ideal proof system for one system into one for the
@@ -318,5 +320,6 @@ the formula.
 
 - The search for earlier statements of Theorems 2, 4 and 5 and Proposition 6 was by keyword on
   arXiv, GitHub, X and the web. They are short enough that some may be folklore.
-- Theorem 2, Theorem 4 (a), (c), (d), Theorem 5 (b), (c) and Proposition 6 are not formalised.
+- Theorem 2, Theorem 3, Theorem 4 (a), (c), (d), Theorem 5 (c), (d) and Proposition 6 are not
+  formalised. Of Theorem 2, the half that needs no hypothesis is the open statement O7.
 - Koiran's theorem, Wang's theorem and the lower bounds for formulas are cited, not re-proved.

@@ -49,7 +49,7 @@ the reduction at degree 3, or any machine-checked proof of it.
 | "Does a Keller map have a complex zero?" is in NP, assuming the generalized Riemann hypothesis: a zero modulo a prime that does not divide the Jacobian determinant lifts by Hensel's lemma. With §1 the problem is NP-complete | Paper, from Known results; witnesses checked by `scripts/witness.py` |
 | Counting the zeros is #P-hard | Paper, from Lean facts; Computed on small formulas |
 | Recognising a Keller map is in coRP and is as hard as identity testing for determinants of linear forms, already at degree 2 (`det_jacobian_bilinearMap`) | Lean for the key identity; Paper and Known for the rest |
-| A Nullstellensatz refutation of "the map has no zero" gives one of the formula of no larger degree (`refutation_of_formula`), and conversely with degree at most twice plus 18. So some maps of degree 3 in `N` variables need certificates of degree `Ω(N)` | Lean; Paper; the lower bounds for formulas are Known |
+| A Nullstellensatz refutation of "the map has no zero" gives one of the formula of no larger degree (`refutation_of_formula`), and conversely with at most twice the degree plus 24 (`Proofs.RefutationOfMap`; 18 on paper). So some maps of degree 3 in `N` variables need certificates of degree `Ω(N)` | Lean, both ways; the lower bounds for formulas are Known |
 | "Is this Keller map not injective?" is in NP under the same hypothesis | Paper |
 
 Nobody has proved P = NP with these maps; COMPLEXITY.md §1 says what we found when we looked.
@@ -96,8 +96,8 @@ list of clauses.
 
 ## What is still open here
 
-- O5 in [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean): bijectivity at degree 2, in
-  Lean. The other five statements are proved.
+- In [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean): bijectivity at degree 2 (O5), and
+  that a zero modulo a prime gives a complex zero (O7). The other six statements are proved.
 - Fewer than 11 variables at degree 3; fewer than 7 at degree 4.
 - The questions at the end of COMPLEXITY.md: the hypothesis in the NP bound, hardness of
   "not injective", the real and rational zero problems.
