@@ -16,7 +16,7 @@ This is the theorem of L. Stambler, *Reducing 3SAT to Zero-Finding for Constant-
 Polynomial Maps* (2026), with the gadget of L. Alpöge.
 
 The same at degree three, the least degree at which it can hold, is
-`threeSAT_reduces_to_cubic_keller_zero` in `CubicReduction.lean`: `11 n + 14 m` variables.
+`threeSAT_reduces_to_cubic_keller_zero` in `CubicReduction.lean`: `10 n + 13 m` variables.
 `keller_zero_hard_exactly_from_degree_three` below puts the two halves side by side.
 -/
 

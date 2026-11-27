@@ -37,6 +37,6 @@ python3 scripts/check_gadget.py submissions/spacerat/gadget.json
 
 In Lean (`lean/KellerZero/Cubic11.lean`): the map is a wire extension of Alpöge's map, so its
 Jacobian determinant is `-2` (`det_cubic11Map`), every coordinate has degree at most 3
-(`totalDegree_cubic11Map`) and it is not injective (`cubic11Map_not_injective`). The reduction
-of 3SAT at degree 3 (`lean/KellerZero/CubicReduction.lean`) uses one copy of it per variable
-and per clause.
+(`totalDegree_cubic11Map`) and it is not injective (`cubic11Map_not_injective`). The
+ten-variable map of [`submissions/SecurityQQ`](../SecurityQQ/SUBMISSION.md) is built the same
+way, with one wire fewer.

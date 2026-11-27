@@ -6,12 +6,12 @@ and [COMPLEXITY.md](COMPLEXITY.md).
 ## A smaller gadget (tracks `cubic-variables`, `quartic-variables`, `degree-3d`, `variables`)
 
 Find polynomials `F_1 .. F_N` with rational coefficients whose Jacobian determinant is a nonzero
-constant, and two different rational points with the same image. The marks to beat: 11
+constant, and two different rational points with the same image. The marks to beat: 10
 variables at degree 3, 7 at degree 4, degree 7 in three variables, 3 variables at any degree.
 
 ```bash
 python3 scripts/check_gadget.py submissions/<handle>/gadget.json    # exact; prints variables and degree
-python3 scripts/lower_degree.py gadget 3                            # how the 11-variable map is built
+python3 scripts/lower_degree.py gadget 3                            # how the 10-variable map is built
 python3 scripts/test_check_gadget.py && python3 scripts/test_lower_degree.py
 ```
 

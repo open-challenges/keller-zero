@@ -13,8 +13,9 @@ obtained from the gadget by the reduction of Bass, Connell and Wright (the const
 
 That its Jacobian determinant is the constant `-2` is the statement
 `KellerZero.Open.CubicGadgetIsKeller`, proved in `Proofs/CubicGadgetIsKeller.lean`. A map of
-degree three with one variable fewer, published earlier by others, is in `Cubic11.lean`; the
-reduction at degree three (`CubicReduction.lean`) uses that one.
+degree three with one variable fewer, published earlier by others, is in `Cubic11.lean`, and one
+with two fewer in `Cubic10.lean`; the reduction at degree three (`CubicReduction.lean`) uses the
+smallest.
 -/
 
 namespace KellerZero

@@ -5,6 +5,7 @@ import KellerZero.Certificates
 import KellerZero.Wire
 import KellerZero.Degree
 import KellerZero.Cubic
+import KellerZero.Cubic10
 import KellerZero.Cubic11
 import KellerZero.CubicReduction
 import KellerZero.Recognition

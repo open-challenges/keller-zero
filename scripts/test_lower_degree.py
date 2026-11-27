@@ -12,9 +12,9 @@ from lower_degree import WIRES, formula, gadget  # noqa: E402
 
 def main():
     # the gadget at every degree: exact Jacobian determinant -2, two points with one value
-    for degree in (6, 5, 4, 3, "twelve"):
+    for degree in (6, 5, 4, 3, "eleven", "twelve"):
         v = check(gadget(degree))
-        want = 3 if degree == "twelve" else degree
+        want = degree if isinstance(degree, int) else 3
         assert v["ok"] and v["degree"] == want and v["variables"] == 3 + WIRES[degree] and v["jacobian"] == "-2", v
         assert v["value"][:3] == ["-1/4", "0", "0"] and set(v["value"][3:]) == {"0"}, v
         print("gadget: degree %d in %d variables" % (want, v["variables"]))
@@ -25,7 +25,7 @@ def main():
         start = time.time()
         L, coords, n, m = formula(clauses)
         N = len(L.ring.names)
-        assert N == 11 * n + 14 * m and all(c.degree() <= 3 for c in coords)
+        assert N == 10 * n + 13 * m and all(c.degree() <= 3 for c in coords)
         jac = determinant([[p_diff(c.terms, j) for j in range(N)] for c in coords], N)
         assert jac == {(0,) * N: Fraction(-3456) ** (n + m)}, jac
         # a satisfying assignment gives a zero (witness blocks at the point with x = 0) ...

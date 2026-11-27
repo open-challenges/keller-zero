@@ -61,7 +61,7 @@ impossible, and it is only about three weak proof systems.
 ## 2. Zeros: nothing at degree 2, NP-hard at degree 3
 
 **Theorem 1 (Lean: `threeSAT_reduces_to_cubic_keller_zero`).** For every 3CNF formula `φ` with
-`n` variables and `m` clauses there is a map `cubicReduction φ` of `11n + 14m` polynomials in as
+`n` variables and `m` clauses there is a map `cubicReduction φ` of `10n + 13m` polynomials in as
 many variables, with integer coefficients, such that
 
 1. every coordinate has total degree at most 3,
@@ -87,10 +87,11 @@ coordinates `s_c = t_c + (a polynomial in the old variables and earlier wires)`,
 from the old coordinates polynomials in the `s_c`. `det_wireExt` proves that this never changes
 the Jacobian determinant, and `aeval_wireExt_eq_zero_iff` that it never changes the zeros. This
 is the reduction of degree of Bass, Connell and Wright (1982). What has to be chosen is which
-wires: eight per block, those of the eleven-variable map of degree 3 published on 20 July 2026
-([gist](https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8)), and three per
-clause for the product of the literal values. `det_cubic11Map`, `totalDegree_cubic11Map` and
-`cubic11Map_not_injective` check that eleven-variable map itself in Lean.
+wires: seven per block, those of a ten-variable map of degree 3 found for this repository
+(FINDINGS.md, §4; it improves by one the eleven-variable map published on 20 July 2026,
+[gist](https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8)), and three per
+clause for the product of the literal values. `det_cubic10Map`, `totalDegree_cubic10Map` and
+`cubic10Map_not_injective` check the ten-variable map itself in Lean.
 
 Upper bounds that are known for all systems of polynomial equations: a real zero can be decided
 in the existential theory of the reals, hence in polynomial space (Known: Canny, 1988). The
@@ -312,7 +313,7 @@ the formula.
 2. Is "not injective" NP-hard for Keller maps (§7)?
 3. Is the real zero problem for Keller maps in NP? The rational one? Neither has the modular
    witness.
-4. Fewer variables at degree 3 (the record is 11), and in the reduction (11 per variable, 14
+4. Fewer variables at degree 3 (the record is 10), and in the reduction (10 per variable, 13
    per clause).
 5. A lower bound on certificates in a proof system stronger than the three of §6.
 

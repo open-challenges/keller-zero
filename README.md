@@ -24,7 +24,7 @@ Nobody has proved P = NP this way, and nothing here is a lower bound on computat
 ## Found here
 
 1. **The reduction at degree 3, in Lean.** For every 3CNF formula with `n` variables and `m`
-   clauses: a map of `11n + 14m` integer polynomials of degree at most 3, with Jacobian
+   clauses: a map of `10n + 13m` integer polynomials of degree at most 3, with Jacobian
    determinant `(-3456)^(n+m)`, that has a zero exactly when the formula is satisfiable. A map
    of degree 2 with constant Jacobian determinant is injective, so 3 is where hardness starts.
 2. **The complex zero problem is in NP**, assuming the generalized Riemann hypothesis: a zero
@@ -36,7 +36,8 @@ Nobody has proved P = NP this way, and nothing here is a lower bound on computat
    gives one of the other, with the same degree one way and at most twice the degree plus 24
    the other way (Lean, both ways). The same on paper for polynomial calculus and sums of
    squares.
-5. **Seven variables at degree 4**, one fewer than the published eight.
+5. **Ten variables at degree 3 and seven at degree 4**, each one fewer than the smallest
+   published map we could find (eleven and eight). The ten-variable map is checked in Lean.
 
 A first version of this page also listed the description of the gadget by a cubic. That was
 published by others on 20 July 2026; what is here is its proof in Lean.
@@ -46,11 +47,12 @@ published by others on 20 July 2026; what is here is its proof in Lean.
 
 | Track | Record | Entry | Date |
 |---|---|---|---|
-| `cubic-variables`: fewest variables at degree 3 | 11 (baseline) | [The eleven-variable map of degree 3](submissions/spacerat/SUBMISSION.md), Spacerat | 2026-07-20 |
-| `quartic-variables`: fewest variables at degree 4 | 7 (baseline) | [Degree 4 in seven variables](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
+| `cubic-variables`: fewest variables at degree 3 | **10** | [Degree 3 in ten variables](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
+| | 11 (baseline) | [The eleven-variable map of degree 3](submissions/spacerat/SUBMISSION.md), Spacerat | 2026-07-20 |
+| `quartic-variables`: fewest variables at degree 4 | **7** (baseline 8, published) | [Degree 4 in seven variables](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
 | `degree-3d`: lowest degree in three variables | 7 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
 | `variables`: fewest variables | 3 (baseline) | [Alpöge's map, as used by Stambler](submissions/alpoge-stambler/SUBMISSION.md) | 2026-11-26 |
-| `open-statements`: statements proved | 6 of 8 (baseline) | [O1, O2, O3, O4, O6, O8](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
+| `open-statements`: statements proved | 6 of 8 | [O1, O2, O3, O4, O6, O8](submissions/SecurityQQ/SUBMISSION.md) | 2026-11-27 |
 
 An entry with 2 variables would settle the plane Jacobian conjecture.
 
@@ -61,11 +63,12 @@ CI rebuilds everything on every push.
 
 | Theorem ([`lean/KellerZero`](lean/KellerZero)) | Says |
 |---|---|
-| `threeSAT_reduces_to_cubic_keller_zero` | The reduction at degree 3: `11n + 14m` variables, determinant `(-3456)^(n+m)`, a zero exactly when the formula is satisfiable |
+| `threeSAT_reduces_to_cubic_keller_zero` | The reduction at degree 3: `10n + 13m` variables, determinant `(-3456)^(n+m)`, a zero exactly when the formula is satisfiable |
 | `keller_zero_hard_exactly_from_degree_three` | Degree 2 is injective and degree 3 carries 3SAT, in one statement |
 | `threeSAT_reduces_to_keller_zero` | Stambler's theorem, degree 7 |
 | `pderiv_bind₁`, `det_wireExt`, `aeval_wireExt_eq_zero_iff` | The chain rule, and that adding wires changes neither the Jacobian determinant nor the zeros |
-| `det_cubic11Map`, `totalDegree_cubic11Map`, `cubic11Map_not_injective` | The eleven-variable map of degree 3 |
+| `det_cubic10Map`, `totalDegree_cubic10Map`, `cubic10Map_not_injective` | A map of degree 3 in ten variables: Jacobian determinant -2, not injective |
+| `det_cubic11Map`, `cubic11Map_not_injective` | The same for the published eleven-variable map |
 | `refutation_of_formula`, `Proofs.RefutationOfMap` | A refutation of the map gives a refutation of the formula of no larger degree, and conversely with at most twice the degree plus 24 |
 | `det_jacobian_bilinearMap` | The Jacobian determinant of `(x, y) ↦ (x, M(x)y)` is `det M(x)` |
 | `curve_certificate`, `target_certificate`, `zeros_of_H` | Explicit certificates: the omitted curve and the three zeros of the gadget |
@@ -93,8 +96,9 @@ python3 scripts/check_proofs.py
 The gadget is Levent Alpöge's map
 ([announcement](https://x.com/__alpoge__/status/2079028340955197566)); the reduction is Lev
 Stambler's ([alg-geom-TCS](https://github.com/Lev-Stambler/alg-geom-TCS), MIT); the
-eleven-variable map of degree 3 is
-[Spacerat's](https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8); lowering the
+first map of degree 3 with as few as eleven variables is
+[Spacerat's](https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8), and the
+ten-variable one here is built the same way; lowering the
 degree is the method of Bass, Connell and Wright. Earlier machine-checked proofs that Alpöge's
 map is a counterexample exist in Lean (Paul Lezeau) and in Isabelle (Archive of Formal Proofs,
 `Jacobian_Counterexample`). The Lean proofs here, the reduction at degree 3, the notes and the

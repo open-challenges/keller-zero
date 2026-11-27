@@ -15,13 +15,13 @@ starts, and how hard it is.
 | The first version said | What is true |
 |---|---|
 | "The gadget is one cubic in disguise" was found here | It was published on 20 July 2026, the day after the announcement: an [unsigned manuscript](https://www.ulam.ai/research/jacobian.pdf) proves that the preimages are the simple roots of a cubic, that the image is the complement of one curve, and that the map fails to be proper exactly on the discriminant surface. Gao ([arXiv:2608.00222](https://arxiv.org/abs/2608.00222), appendix) has the cubic in the very coordinates used here. Shaska ([arXiv:2607.20210](https://arxiv.org/abs/2607.20210)) has the grading, the monodromy group S₃ and the thin image over ℚ. What this repository adds is the proof in Lean and one explicit certificate (§3). |
-| The 12-variable map of degree 3 was new | A map of degree 3 in **11** variables was [published on 20 July 2026](https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8) (author's handle Spacerat, generated with ChatGPT). Twelve-variable ones are due to van Rijn and to de Bondt ([arXiv:2610.24889](https://arxiv.org/abs/2610.24889)). Ours came later and is not a record. |
-| The table of variables against degree was the best known | At degrees 6 and 5 de Bondt has 4 and 5 variables; we had 5 and 6. At degree 4 our 7 variables is one fewer than his 8 (§4). |
+| The 12-variable map of degree 3 was new | A map of degree 3 in **11** variables was [published on 20 July 2026](https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8) (author's handle Spacerat, generated with ChatGPT). Twelve-variable ones are due to van Rijn and to de Bondt ([arXiv:2610.24889](https://arxiv.org/abs/2610.24889)). Our twelve-variable map came later and was never a record. (A day later we found one in 10 variables; see §4.) |
+| The table of variables against degree was the best known | At degrees 6 and 5 de Bondt has 4 and 5 variables; we had 5 and 6. At degree 4 our 7 variables is one fewer than his 8, and at degree 3 the published record was 11, not our 12 (§4). |
 
 ## 1. 3SAT reduces to the zero problem at degree 3, and this is checked in Lean
 
 **Theorem (Lean: `threeSAT_reduces_to_cubic_keller_zero`).** For every 3CNF formula with `n`
-variables and `m` clauses, `cubicReduction φ` is a map of `11n + 14m` integer polynomials in as
+variables and `m` clauses, `cubicReduction φ` is a map of `10n + 13m` integer polynomials in as
 many variables, each of degree at most 3, whose Jacobian determinant is `(-3456)^(n+m)`, and
 which has a zero over any field of characteristic zero exactly when the formula is satisfiable.
 
@@ -32,7 +32,8 @@ question can be hard. `keller_zero_hard_exactly_from_degree_three` states both h
 | Piece | Label |
 |---|---|
 | A *wire extension* of any map has the same Jacobian determinant and the same zeros (`det_wireExt`, `aeval_wireExt_eq_zero_iff`); the chain rule for substitution (`pderiv_bind₁`) | Lean |
-| The eleven-variable map of degree 3 of 20 July 2026 is a wire extension of the gadget: determinant `-2`, degree 3, not injective (`det_cubic11Map`, `totalDegree_cubic11Map`, `cubic11Map_not_injective`) | Lean; the map is Known |
+| A map of degree 3 in ten variables, a wire extension of the gadget with seven wires: determinant `-2`, degree 3, not injective (`det_cubic10Map`, `totalDegree_cubic10Map`, `cubic10Map_not_injective`) | Lean; the map is new (§4) |
+| The same for the eleven-variable map of 20 July 2026 (`det_cubic11Map`, `cubic11Map_not_injective`) | Lean; the map is Known |
 | Three more wires per clause carry the product of three literal values at degree 3 (`bind₁_prodS`, `totalDegree_remainder`) | Lean |
 | The same map built independently and its determinant expanded exactly, for two formulas | Computed: `scripts/test_lower_degree.py` |
 
@@ -77,14 +78,26 @@ by degree:
 
 | Degree | 7 | 6 | 5 | 4 | 3 | 2 |
 |---|---|---|---|---|---|---|
-| Variables | 3 | 4 | 5 | **7** | 11 | impossible |
-| Due to | Alpöge | de Bondt | de Bondt | this repository | Spacerat | Wang, 1980 |
+| Variables | 3 | 4 | 5 | **7** | **10** | impossible |
+| Due to | Alpöge | de Bondt | de Bondt | this repository | this repository | Wang, 1980 |
 
-Ours is the entry at degree 4: `python3 scripts/lower_degree.py gadget 4` prints it and
-`scripts/check_gadget.py` checks it (Computed). The table in de Bondt's paper has 8 there. The
-entries of de Bondt are cited from his paper, not rebuilt here. In three variables, degree 7 is
+Ours are the entries at degrees 4 and 3. `python3 scripts/lower_degree.py gadget 4` and
+`gadget 3` print them and `scripts/check_gadget.py` checks them (Computed); the one at degree 3
+is also checked in Lean. The smallest published before them, as far as we found, have 8
+variables (the table in de Bondt's paper) and 11 (Spacerat's gist, 20 July 2026; a later project
+that compares the published maps, `rk-mlu/kellermap`, calls it the smallest it knows). The
+entries of de Bondt are cited from his paper, not rebuilt here.
+
+The ten-variable map is built the way Spacerat's is and shares three of its wires. The
+saving is one wire `k` that stands for `xz + 3y` and serves two coordinates at once:
+`R = 2x - x²(xz + 3y)` and, with `u = 1 + xy`, `Q = 3u²(xz + 3y) - 6uy - 2y`. It was found by a
+numerical search over wire extensions that respect the grading of the gadget, and then
+confirmed exactly. The same search found no map with six wires at degree 3 and none with three
+at degree 4; that is evidence, not a proof that none exists. In three variables, degree 7 is
 the least known; a preprint (Wang and Yan, [arXiv:2610.36495](https://arxiv.org/abs/2610.36495))
-proves that degree at most 4 is impossible there.
+proves that degree at most 4 is impossible there, and
+[royvanrijn/jacobian-research](https://github.com/royvanrijn/jacobian-research) lists a proof
+for degree 5 (neither checked here).
 
 ## 5. Stambler's theorem, machine-checked
 
@@ -98,7 +111,7 @@ list of clauses.
 
 - In [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean): bijectivity at degree 2 (O5), and
   that a zero modulo a prime gives a complex zero (O7). The other six statements are proved.
-- Fewer than 11 variables at degree 3; fewer than 7 at degree 4.
+- Fewer than 10 variables at degree 3; fewer than 7 at degree 4.
 - The questions at the end of COMPLEXITY.md: the hypothesis in the NP bound, hardness of
   "not injective", the real and rational zero problems.
 - Everything in section 4 of [DIRECTION.md](DIRECTION.md): no lower bound on computation is in
