@@ -4,10 +4,22 @@
 [pequalnp.com](https://pequalnp.com), written for anyone who wants to pick it up. The problem
 statement and the scoreboard are in [PROBLEM.md](PROBLEM.md).
 
-**Since this note was written**, three of its open points were settled: the image of the gadget
-(3.1), the Jacobian determinant of the map of the reduction, and the lowest degree at which the
-problem is NP-hard. They are in [FINDINGS.md](FINDINGS.md), and the text below is updated to
-match.
+**Status, 27 November 2026.** Both conditions of section 6, "when to stop", have been met.
+
+- The certificates of the map and of the formula simulate each other: in degree for
+  Nullstellensatz, polynomial calculus and sums of squares, and in circuit size for the ideal
+  proof system ([COMPLEXITY.md](COMPLEXITY.md), Theorem 5). So the proof-complexity line gives
+  nothing that the usual encoding of formulas does not give.
+- The complex zero problem is in NP under the generalized Riemann hypothesis (COMPLEXITY.md,
+  Theorem 2), and NP-hard already at degree 3 (Lean). The classification is done: NP-complete.
+
+So the direction ends here as a road to a lower bound, and what remains of it is a classified
+object and a machine-checked reduction. Two proofs of VP ≠ VNP with Lean formalisations were
+announced by Anthropic and by OpenAI on 23 and 24 November 2026; we have not examined them. If
+they stand, the most this chain could have delivered (section 4) is known by other means.
+
+The text below is the note as first written, updated where a point was settled or where the
+first version was wrong about what was new ([FINDINGS.md](FINDINGS.md) lists the corrections).
 
 Every claim below carries one of five labels.
 
@@ -66,9 +78,11 @@ rescaled coordinates `H = 12F + (3, 0, 0)`. It lies on a curve of omitted values
     H never takes the value (t^2 + 3, 12t, 16/t), t ≠ 0            (Lean; Δ is t = 2)
 
 Over the complex numbers nothing else is omitted, and the same holds over the real numbers
-(Lean: `image_complex`, `image_real`). The reason is in [FINDINGS.md](FINDINGS.md): a target
-`(a, b, c)` with `c ≠ 0` is a value exactly when the cubic `m³ - 2m² + bc·m - 2ac²` has a
-simple root, and the curve is where that cubic is a perfect cube. It fits a general fact
+(Lean: `image_complex`, `image_real`). The reason: a target `(a, b, c)` with `c ≠ 0` is a value
+exactly when the cubic `m³ - 2m² + bc·m - 2ac²` has a simple root, and the curve is where that
+cubic is a perfect cube. This description was published on 20 July 2026, before this note
+(Known: see the corrections in [FINDINGS.md](FINDINGS.md)); the Lean proof is what is added
+here. It fits a general fact
 (Paper): a Keller map over the complex numbers never omits a hypersurface `{g = 0}`, because
 `g ∘ F` would be a polynomial with no zero, hence constant, and `F` would map into `{g = c}`.
 So omitted sets have codimension at least two; here the set is a curve in three-space.
@@ -91,7 +105,8 @@ codimension at least two, and the 0/1 points of `Ω_n` are exactly the unsatisfi
 **3.3 A first measurement.** For the single gadget and an omitted target `q`, the least `D`
 with `1 = Σ g_i (F_i - q_i)` and `deg(g_i F_i) ≤ D` is 10, at `t = 2, 1, -3, 5/2` (Computed:
 linear algebra modulo `2^61 - 1`, [`scripts/ns_degree.py`](scripts/ns_degree.py)). The system
-has degree 7, so the refutation needs three more.
+has degree 7, so the refutation needs three more. A certificate of degree 10 that works for
+every `t` at once is now explicit (Lean: `curve_certificate`).
 
 ## 4. The chain to P vs NP, and the link that is missing
 
@@ -102,8 +117,8 @@ A route should say how it reaches P vs NP and where it stops. This one stops ear
    `1 = Σ g_i K_i`.
 2. For the standard encoding of CNFs, a superpolynomial lower bound on the circuit size of such
    certificates, for some family of unsatisfiable formulas, implies VNP ≠ VP (Known: Grochow and
-   Pitassi, the Ideal Proof System). Carrying that over to the Keller encoding needs a
-   simulation lemma between the two encodings (Open; expected to be routine).
+   Pitassi, the Ideal Proof System). The Keller encoding and the standard one simulate each
+   other (Paper: COMPLEXITY.md, Theorem 5), so this carries over, and nothing is gained.
 3. VNP ≠ VP is implied by NP ⊄ P/poly under the generalized Riemann hypothesis (Known:
    Bürgisser, 2000). It is not known to imply it.
 
@@ -126,16 +141,18 @@ equations of `Ω_n` or the certificates faces the usual obstacles for algebraic 
 bounds, including the algebraic natural proofs barrier (Forbes, Shpilka and Volk; Grochow,
 Kumar, Saks and Saraf). Nothing here is claimed to pass them.
 
-**Classification.** Over the complex numbers the zero problem for Keller maps is a case of
-Hilbert's Nullstellensatz, so it is NP-hard and in AM under the generalized Riemann hypothesis
-(Known: Koiran, 1996). Over the reals it sits between NP and the existential theory of the
-reals. Whether it is in NP is open in both cases. The zeros are isolated and simple, which is
-what the generic problem lacks, but they need not be small: the Keller map
-`(x_1 - 2, x_2 - x_1^2, x_3 - x_2^2, ...)` has its only zero at `x_k = 2^(2^(k-1))`.
+**Classification.** Over the complex numbers the zero problem for Keller maps is NP-hard, and
+it is in NP under the generalized Riemann hypothesis (Paper: COMPLEXITY.md, Theorem 2; for
+general systems the known bound is weaker, Koiran, 1996). The zeros are isolated and simple,
+which is what the generic problem lacks, and that is exactly what the proof uses: a zero modulo
+a prime lifts. The zeros themselves need not be small: the Keller map
+`(x_1 - 2, x_2 - x_1^2, x_3 - x_2^2, ...)` has its only zero at `x_k = 2^(2^(k-1))`. Over the
+reals the problem sits between NP and the existential theory of the reals, and whether it is in
+NP is open.
 
 ## 5. First units
 
-Each is one exact statement. Four were settled here after the note was first written; the
+Each is one exact statement. Most were settled after the note was first written; the
 statements still to prove in Lean are in [`lean/KellerZero/Open.lean`](lean/KellerZero/Open.lean).
 
 | Kind | Statement | Status |
@@ -143,16 +160,18 @@ statements still to prove in Lean are in [`lean/KellerZero/Open.lean`](lean/Kell
 | prove (O1) | Over the complex numbers the gadget omits the curve and nothing else | Lean |
 | prove (O2) | `det JK_φ = (-3456)^(n+m)` for the polynomial map `reductionMap φ` | Lean |
 | prove (O3) | A Keller map of degree at most two is injective (Wang, 1980) | Lean |
-| prove | 3SAT reduces to the zero problem for Keller maps of degree 3 | Computed and Paper: FINDINGS.md, section 2 |
+| prove | 3SAT reduces to the zero problem for Keller maps of degree 3 | Lean: `threeSAT_reduces_to_cubic_keller_zero` |
 | prove | The omitted set of the gadget over the reals | Lean: the same curve |
-| prove (O4) | The Jacobian determinant of the 12-variable map of degree 3 is `-2` | Computed; open in Lean |
+| prove (O4) | The Jacobian determinant of the 12-variable map of degree 3 is `-2` | Lean |
 | prove (O5) | A Keller map of degree at most two is a bijection | Known; open in Lean |
-| value | The least Nullstellensatz degree for the target `Δ` of the gadget (computed: 10) | open |
-| value | The same for `K_φ` with `φ = x ∧ ¬x` (9 variables), against the standard encoding of the same formula | open |
-| search | A non-injective Keller map of degree 3 in fewer than 12 variables | open |
+| value | The least Nullstellensatz degree for the target `Δ` of the gadget (computed: 10) | an exact certificate of degree 10 is in Lean; that 9 is impossible is Computed modulo a prime |
+| value | The same for `K_φ` with `φ = x ∧ ¬x` (9 variables), against the standard encoding of the same formula | at most 24 (Computed), and at least 7, the degree of the system; in general between the formula's degree (Lean) and twice it plus 18 (Paper) |
+| search | A non-injective Keller map of degree 3 in fewer than 12 variables | Known: 11, published 20 July 2026; fewer is open |
 | search | A non-injective Keller map of degree below 7 in three variables | open |
 | search | Any non-injective Keller map in two variables (this would settle the plane Jacobian conjecture) | open |
-| open | Is the zero problem for Keller maps in NP, over the complex numbers or over the reals? | open |
+| open | Is the zero problem for Keller maps in NP, over the complex numbers or over the reals? | complex: yes, under the generalized Riemann hypothesis (Paper); real: open |
+| prove (O7) | A zero modulo a prime at which the Jacobian determinant is not zero gives a complex zero | Paper; open in Lean |
+| prove (O8) | A refutation of the formula gives one of its map of at most twice the degree plus a constant | Paper; open in Lean |
 
 ## 6. When to stop
 
@@ -164,12 +183,16 @@ statements still to prove in Lean are in [`lean/KellerZero/Open.lean`](lean/Kell
 - If the zero problem over the complex numbers is shown to be in NP, the classification is
   done: NP-complete.
 
+Both happened on 27 November 2026; see the status at the top.
+
 ## 7. What was not checked
 
-- Whether the omitted curve (3.1) or the one-map form (3.2) is already in print or in the
-  discussion that followed the announcement. No literature search was made.
-- The certificate degree 10 is computed modulo one prime, not proved.
-- Citations are from memory of the literature and were not re-opened for this note.
+- The first version was written without a literature search. One was made on 27 November 2026
+  (FINDINGS.md): the omitted curve (3.1) was already published; the one-map form (3.2) we did
+  not find.
+- That no certificate of degree 9 exists for the target `Δ` is computed modulo one prime.
+- The papers of Koiran and of Kabanets and Impagliazzo were re-opened for the statements used
+  in COMPLEXITY.md; the other citations are from memory.
 
 ## Sources
 
@@ -182,6 +205,24 @@ statements still to prove in Lean are in [`lean/KellerZero/Open.lean`](lean/Kell
 - H. Bass, E. Connell, D. Wright, *The Jacobian conjecture: reduction of degree and formal
   expansion of the inverse*, Bull. AMS 7 (1982).
 - P. Koiran, *Hilbert's Nullstellensatz is in the polynomial hierarchy*, J. Complexity 12 (1996).
+- G. Kuperberg, *Knottedness is in NP, modulo GRH*, Adv. Math. 256 (2014).
+- V. Kabanets, R. Impagliazzo, *Derandomizing polynomial identity tests means proving circuit
+  lower bounds*, STOC 2003.
+- M. Mahajan, V. Vinay, *Determinant: combinatorics, algorithms, and complexity*, Chicago J.
+  Theoret. Comput. Sci. (1997).
+- E. Ben-Sasson, R. Impagliazzo, *Random CNF's are hard for the polynomial calculus*, FOCS 1999;
+  M. Alekhnovich, A. Razborov, *Lower bounds for polynomial calculus: non-binomial case*, 2001.
+- D. Grigoriev, *Linear lower bound on degrees of Positivstellensatz calculus proofs for the
+  parity*, Theoret. Comput. Sci. 259 (2001); G. Schoenebeck, *Linear level Lasserre lower bounds
+  for certain k-CSPs*, FOCS 2008.
+- *A counterexample to the Jacobian conjecture*, unsigned manuscript dated 20 July 2026:
+  https://www.ulam.ai/research/jacobian.pdf
+- S. Gao, *Counterexamples to the Jacobian conjecture in dimensions greater than two*,
+  arXiv:2608.00222; T. Shaska, *Graded Keller maps and the Jacobian Conjecture*,
+  arXiv:2607.20210; M. de Bondt, *Alpöge's counterexample to the JC, economic stabilization, and
+  Zhao's vanishing conjecture*, arXiv:2610.24889.
+- Spacerat, *11 variable cubic jacobian conjecture counterexample*, 20 July 2026:
+  https://gist.github.com/Spacerat/08b4a43f6b6ca57178efabc220170ce8
 - P. Bürgisser, *Cook's versus Valiant's hypothesis*, Theoret. Comput. Sci. 235 (2000).
 - J. Grochow, T. Pitassi, *Circuit complexity, proof complexity, and polynomial identity
   testing: the ideal proof system*, J. ACM 65 (2018).

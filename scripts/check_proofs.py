@@ -18,7 +18,8 @@ import sys
 import tempfile
 
 NAMES = ["ImageIsComplementOfCurve", "ReductionMapIsKeller", "QuadraticKellerMapsAreInjective",
-         "CubicGadgetIsKeller", "QuadraticKellerMapsAreBijective", "FibreCount"]
+         "CubicGadgetIsKeller", "QuadraticKellerMapsAreBijective", "FibreCount",
+         "WitnessIsSound", "RefutationOfMap"]
 # The chain that is checked already: each must build and rest on the three axioms only.
 CHECKED = ["det_jacobian", "jacobian_conjecture_fails_dim_three", "fibre_zero", "omitted_curve",
            "exists_zero_reductionMap_iff_satisfiable", "hitsTarget_iff_satisfiable",

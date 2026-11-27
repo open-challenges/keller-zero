@@ -1,17 +1,17 @@
 ---
 spec: submission.md/v1
 problem: ../../PROBLEM.md
-title: The gadget at degree 3, in 12 variables
+title: Degree 4 in seven variables, and five statements
 author: SecurityQQ
-date: 2026-11-26
+date: 2026-11-27
 baseline: true
 
 results:
-  - track: cubic-variables
-    value: 12
+  - track: quartic-variables
+    value: 7
   - track: open-statements
-    value: 4
-    notes: O1, O2, O3 and O6
+    value: 5
+    notes: O1, O2, O3, O4 and O6
 
 agent:
   model: Claude Fable 5.2
@@ -21,34 +21,39 @@ agent:
 code: ./
 ---
 
-# The gadget at degree 3
+# Degree 4 in seven variables
 
-Entered by the maintainers as the starting mark of the `cubic-variables` track.
+Entered by the maintainers as the starting mark of the `quartic-variables` track. The smallest
+map of degree 4 we found in print has eight variables (the table in section 4.7 of de Bondt,
+[arXiv:2610.24889](https://arxiv.org/abs/2610.24889)).
 
-The reduction of Bass, Connell and Wright (1982), applied to Alpöge's map with shared wires:
-nine new variables `t1 … t9`, each coordinate of degree at most 3, integer coefficients. The
-construction and the reason it keeps the Jacobian determinant and the fibres are in
-[`scripts/lower_degree.py`](../../scripts/lower_degree.py); the short version is that the map is
-`T ∘ (F × id) ∘ S` for two triangular maps `S` and `T`.
-
-With `u = 1 + xy` and `E = uz + 3y²`, the gadget is `P = u²E + uy²`, `Q = y + 3xy² + 3(xu)E`,
-`R = 2x - 3x²y - x³z`. The wires carry `xy`, `xu`, `E`, `x²y²`, `x²`, `xz` and three
-corrections.
+The reduction of Bass, Connell and Wright (1982), applied to Alpöge's map with four shared
+wires. With `u = 1 + xy` and `E = uz + 3y²`, the map is `P = u²E + uy²`,
+`Q = y + 3xy² + 3(xu)E`, `R = 2x - 3x²y - x³z`. The wires carry `xu`, `E` and `u² - 1`, and a
+fourth one, `t_E·y`, removes the one term of degree 5 that the product `(u² - 1)·E` leaves.
+`R` already has degree 4. Why this keeps the Jacobian determinant and the fibres is proved in
+Lean for every construction of this shape (`lean/KellerZero/Wire.lean`).
 
 ## Reproduce
 
 ```bash
-python3 scripts/lower_degree.py gadget 3 > /tmp/gadget.json   # the same file
+python3 scripts/lower_degree.py gadget 4 | diff - submissions/SecurityQQ/gadget.json
 python3 scripts/check_gadget.py submissions/SecurityQQ/gadget.json
 ```
 
-`{"ok": true, "variables": 12, "degree": 3, "jacobian": "-2", ...}`. In Lean
-(`lean/KellerZero/Cubic.lean`): the map has the fibres of the gadget and is not injective. Its
-determinant in Lean is the open statement O4.
+`{"ok": true, "variables": 7, "degree": 4, "jacobian": "-2", ...}`.
+
+## Also here
+
+`twelve.json` is a map of degree 3 in twelve variables, built before we knew of the
+eleven-variable one of [`submissions/spacerat`](../spacerat/SUBMISSION.md). It is not a record
+and is not scored. It is `cubicPoly` in `lean/KellerZero/Cubic.lean`, and that its Jacobian
+determinant is `-2` was the open statement O4.
 
 ## The statements
 
 Proofs of O1 (the image of the gadget over ℂ), O2 (the map of the reduction is a Keller map),
-O3 (degree two is injective) and O6 (the fibre has as many points as the cubic has simple
-roots) are in `lean/KellerZero/Proofs/`. [FINDINGS.md](../../FINDINGS.md) says what they add up
-to.
+O3 (degree two is injective), O4 (the twelve-variable map is a Keller map) and O6 (the fibre
+has as many points as the cubic has simple roots) are in `lean/KellerZero/Proofs/`.
+[FINDINGS.md](../../FINDINGS.md) says what is new in them and what is a formalisation of
+published results.
