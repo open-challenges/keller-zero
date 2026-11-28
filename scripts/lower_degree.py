@@ -8,6 +8,7 @@
     python3 scripts/lower_degree.py formula "1 2 3, -1 -2 -3"   # Stambler's map of a formula, lowered to degree 3
     python3 scripts/lower_degree.py compact "1 2 3, -1 -2 -3"   # a smaller map of the formula: one checking gadget
     python3 scripts/lower_degree.py compact-sqrt "1 2 3, -1 -2 -3"   # the same with the fewest variables
+    python3 scripts/lower_degree.py compact7 "1 2 3, -1 -2 -3"   # at Stambler's degree 7: 3 n + ceil(m / 6) + 5 variables
 
 Prints a gadget.json. `formula` takes clauses of three literals, variable k as k and its
 negation as -k.
@@ -391,6 +392,65 @@ def compact(clauses, width=1):
     return ring, coords, {"variables": n, "clauses": m, "width": w, "chain": L, "rho": rho}
 
 
+def compact7(clauses):
+    """The same idea at degree 7, the degree of Stambler's map, with the three-variable gadget
+    itself: 3 n + ceil(m / 6) + 5 variables against his 3 n + 3 m. The number s of false clauses
+    is a polynomial of degree 6 in the first variables of the blocks, and a chain variable can
+    take six factors at a time."""
+    n = max(abs(l) for c in clauses for l in c)
+    m = len(clauses)
+    L = -(-m // 6)
+    names = ["%s_%d" % (v, i) for i in range(1, n + 1) for v in "xyz"] + ["s"] \
+        + ["r%d" % i for i in range(L + 1)] + ["x_c", "y_c", "z_c"]
+    ring = Ring(names)
+    V = ring.var
+
+    def block(tag):
+        sub = lambda t: t.replace("x", "\0").replace("y", "\1").replace("z", "\2") \
+            .replace("\0", "x_%s" % tag).replace("\1", "y_%s" % tag).replace("\2", "z_%s" % tag)
+        return [ring.read(sub(g)) for g in GADGET]
+
+    coords = []
+    for i in range(1, n + 1):
+        g = block(i)
+        coords += [12 * g[0] + 3, 12 * g[1], 12 * g[2]]
+    count = 0
+    for clause in clauses:
+        f = 1
+        for lit in clause:
+            sq = V("x_%d" % abs(lit)) ** 2
+            f = f * ((1 - sq) if lit > 0 else sq)
+        count = count + f
+    coords.append(V("s") - count)
+    coords.append(V("r0") - 1)
+    for i in range(L):
+        step = V("r%d" % i)
+        for t in range(6 * i + 1, 6 * i + 7):
+            step = step * (t - V("s"))
+        coords.append(V("r%d" % (i + 1)) - step)
+    rho = math.factorial(6 * L)
+    last = V("r%d" % L)
+    g = block("c")
+    coords += [rho * (12 * g[0] + 3) - 7 * (rho - last), rho * 12 * g[1] - 24 * (rho - last),
+               rho * 12 * g[2] - 8 * (rho - last)]
+    worst = max(c.degree() for c in coords)
+    if worst > 7:
+        raise ValueError("degree %d" % worst)
+    return ring, coords, {"variables": n, "clauses": m, "chain": L, "rho": rho}
+
+
+def compact7_point(clauses, info, blocks, checker):
+    s = sum(math.prod((1 - Fraction(blocks[abs(l) - 1][0]) ** 2) if l > 0 else Fraction(blocks[abs(l) - 1][0]) ** 2
+                      for l in c) for c in clauses)
+    r = [Fraction(1)]
+    for i in range(info["chain"]):
+        value = r[-1]
+        for t in range(6 * i + 1, 6 * i + 7):
+            value *= (t - s)
+        r.append(value)
+    return [Fraction(v) for b in blocks for v in b] + [s] + r + [Fraction(v) for v in checker]
+
+
 def above_block(p):
     """The ten coordinates of a gadget block above the point p = (x, y, z)."""
     x, y, z = (Fraction(v) for v in p)
@@ -426,6 +486,16 @@ def main(argv):
         L, coords, n, m = formula(clauses)
         print(json.dumps({"variables": L.ring.names, "map": [c.text() for c in coords],
                           "formula": clauses, "blocks": {"variables": n, "clauses": m}}, indent=2))
+        return 0
+    if len(argv) == 2 and argv[0] == "compact7":
+        clauses = [tuple(int(l) for l in c.split()) for c in argv[1].split(",")]
+        if not clauses or any(len(c) != 3 or 0 in c for c in clauses):
+            print("clauses of three nonzero literals, separated by commas", file=sys.stderr)
+            return 2
+        ring, coords, info = compact7(clauses)
+        info["rho"] = str(info["rho"])
+        print(json.dumps({"variables": ring.names, "map": [c.text() for c in coords],
+                          "formula": clauses, "construction": info}, indent=2))
         return 0
     if len(argv) == 2 and argv[0] in ("compact", "compact-sqrt"):
         clauses = [tuple(int(l) for l in c.split()) for c in argv[1].split(",")]

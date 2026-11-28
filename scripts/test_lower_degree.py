@@ -9,7 +9,7 @@ from fractions import Fraction
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_gadget import check, determinant, p_diff, p_eval  # noqa: E402
-from lower_degree import WIRES, compact, compact_point, formula, gadget  # noqa: E402
+from lower_degree import WIRES, compact, compact7, compact7_point, compact_point, formula, gadget  # noqa: E402
 
 
 def main():
@@ -61,6 +61,16 @@ def main():
             assert count == 3 * weight, (clauses, width, count, weight)
         print("compact %s: degree 3 in %d variables at width 1 (formula: %d), zeros as predicted"
               % (clauses, 10 * n + (m + 1) // 2 + 12, 10 * n + 13 * m))
+        # the same at degree 7, against Stambler's 3 n + 3 m
+        ring, coords, info = compact7(clauses)
+        N = len(ring.names)
+        assert N == len(coords) == 3 * n + -(-m // 6) + 5 and max(c.degree() for c in coords) <= 7
+        jac = determinant([[p_diff(c.terms, j) for j in range(N)] for c in coords], N)
+        assert jac == {(0,) * N: Fraction(-3456) ** (n + 1) * info["rho"] ** 3}, jac
+        count = sum(all(p_eval(c.terms, compact7_point(clauses, info, [points[k] for k in choice[:n]], points[choice[n]])) == 0
+                        for c in coords) for choice in itertools.product(range(3), repeat=n + 1))
+        assert count == 3 * weight, (clauses, count, weight)
+        print("compact7 %s: degree 7 in %d variables (Stambler: %d), zeros as predicted" % (clauses, N, 3 * n + 3 * m))
     print("ok")
 
 
