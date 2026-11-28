@@ -8,6 +8,8 @@ import KellerZero.Cubic
 import KellerZero.Cubic10
 import KellerZero.Cubic11
 import KellerZero.CubicReduction
+import KellerZero.Program
+import KellerZero.CompactReduction
 import KellerZero.Recognition
 import KellerZero.Refutation
 import KellerZero.Open

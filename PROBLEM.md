@@ -91,7 +91,8 @@ In [`lean/KellerZero`](lean/KellerZero), on Lean v4.36.0 and Mathlib `fc4f59e5`,
 
 | Theorem | Says |
 |---|---|
-| `threeSAT_reduces_to_cubic_keller_zero` | For every 3CNF formula, a map of `10n + 13m` integer polynomials of degree at most 3 with Jacobian determinant `(-3456)^(n+m)` that has a zero, over any field of characteristic zero, exactly when the formula is satisfiable |
+| `threeSAT_reduces_with_one_checker` | For every 3CNF formula, a map of `10n + ⌈m/2⌉ + 12` integer polynomials of degree at most 3 with constant nonzero Jacobian determinant that has a zero, over any field of characteristic zero, exactly when the formula is satisfiable |
+| `threeSAT_reduces_to_cubic_keller_zero` | The same for Stambler's map lowered to degree 3: `10n + 13m` variables, Jacobian determinant `(-3456)^(n+m)` |
 | `threeSAT_reduces_to_keller_zero` | The same for Stambler's map: degree 7, `3n + 3m` variables |
 | `Proofs.QuadraticKellerMapsAreInjective` | A Keller map of degree at most two is injective, so degree 3 is where hardness starts |
 | `det_wireExt`, `aeval_wireExt_eq_zero_iff` | Lowering the degree by adding wires never changes the Jacobian determinant or the zeros |

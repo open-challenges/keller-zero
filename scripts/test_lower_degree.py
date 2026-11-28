@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Tests of lower_degree.py: python3 scripts/test_lower_degree.py"""
+import itertools
+import math
 import os
 import sys
 import time
@@ -7,7 +9,7 @@ from fractions import Fraction
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_gadget import check, determinant, p_diff, p_eval  # noqa: E402
-from lower_degree import WIRES, formula, gadget  # noqa: E402
+from lower_degree import WIRES, compact, compact_point, formula, gadget  # noqa: E402
 
 
 def main():
@@ -38,6 +40,27 @@ def main():
             assert any(p_eval(c.terms, point) != 0 for c in coords)
         print("formula %s: degree 3 in %d variables, Jacobian determinant (-3456)^%d, %.1f s"
               % (clauses, N, n + m, time.time() - start))
+    # the map with one checking gadget, at width 1 (the one proved in Lean) and at width about sqrt(m)
+    points = [(0, 0, Fraction(-1, 4)), (1, Fraction(-3, 2), Fraction(13, 2)), (-1, Fraction(3, 2), Fraction(13, 2))]
+    for clauses in ([(1, 1, 1)], [(1, 1, 2), (-1, 2, 2)], [(1, 1, 1), (-1, -1, -1)],
+                    [(1, 2, 2), (-1, -2, -2), (1, -2, -2), (-1, 2, 2)],
+                    [(1, 2, 3), (-1, -2, -3), (1, -2, 3), (-1, 2, -3), (1, 2, -3)]):
+        n, m = max(abs(l) for c in clauses for l in c), len(clauses)
+        weight = sum(2 ** sum(bits) for bits in itertools.product([0, 1], repeat=n)
+                     if all(any((bits[abs(l) - 1] == 1) == (l > 0) for l in c) for c in clauses))
+        for width in (1, math.isqrt(m) + 1):
+            ring, coords, info = compact(clauses, width)
+            N = len(ring.names)
+            assert N == len(coords) == 10 * n + width + info["chain"] + 11
+            assert width != 1 or N == 10 * n + (m + 1) // 2 + 12
+            jac = determinant([[p_diff(c.terms, j) for j in range(N)] for c in coords], N)
+            assert jac == {(0,) * N: Fraction(-3456) ** (n + 1) * info["rho"] ** 3}, jac
+            # zeros: every block is one of three points, the rest is forced
+            count = sum(all(p_eval(c.terms, compact_point(clauses, info, [points[k] for k in choice[:n]], points[choice[n]])) == 0
+                            for c in coords) for choice in itertools.product(range(3), repeat=n + 1))
+            assert count == 3 * weight, (clauses, width, count, weight)
+        print("compact %s: degree 3 in %d variables at width 1 (formula: %d), zeros as predicted"
+              % (clauses, 10 * n + (m + 1) // 2 + 12, 10 * n + 13 * m))
     print("ok")
 
 

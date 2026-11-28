@@ -28,6 +28,8 @@ CHECKED = ["det_jacobian", "jacobian_conjecture_fails_dim_three", "fibre_zero", 
            "pderiv_bind₁", "det_wireExt", "det_cubic10Map", "totalDegree_cubic10Map",
            "cubic10Map_not_injective", "det_cubic11Map", "totalDegree_cubic11Map",
            "cubic11Map_not_injective", "threeSAT_reduces_to_cubic_keller_zero",
+           "det_jacobian_sum", "det_programMap", "programMap_eq_zero_iff",
+           "threeSAT_reduces_with_one_checker",
            "keller_zero_hard_exactly_from_degree_three", "curve_certificate", "not_on_curve",
            "target_certificate", "zeros_of_H", "det_jacobian_bilinearMap", "refutation_of_formula"]
 ALLOWED = {"propext", "Classical.choice", "Quot.sound"}

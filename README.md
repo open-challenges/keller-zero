@@ -24,9 +24,12 @@ Nobody has proved P = NP this way, and nothing here is a lower bound on computat
 ## Found here
 
 1. **The reduction at degree 3, in Lean.** For every 3CNF formula with `n` variables and `m`
-   clauses: a map of `10n + 13m` integer polynomials of degree at most 3, with Jacobian
-   determinant `(-3456)^(n+m)`, that has a zero exactly when the formula is satisfiable. A map
-   of degree 2 with constant Jacobian determinant is injective, so 3 is where hardness starts.
+   clauses: a map of `10n + ⌈m/2⌉ + 12` integer polynomials of degree at most 3, with constant
+   nonzero Jacobian determinant, that has a zero exactly when the formula is satisfiable.
+   Stambler's map has degree 7 and uses a gadget per clause; this one uses `n + 1` gadgets
+   whatever the number of clauses, because the counting between them is a computation and a
+   computation costs no gadget. A map of degree 2 with constant Jacobian determinant is
+   injective, so 3 is where hardness starts.
 2. **The complex zero problem is in NP**, assuming the generalized Riemann hypothesis: a zero
    modulo a prime lifts to a complex zero by Hensel's lemma. So the problem is NP-complete.
    Counting zeros is #P-hard. (Proofs on paper, from published theorems.)
@@ -63,7 +66,9 @@ CI rebuilds everything on every push.
 
 | Theorem ([`lean/KellerZero`](lean/KellerZero)) | Says |
 |---|---|
-| `threeSAT_reduces_to_cubic_keller_zero` | The reduction at degree 3: `10n + 13m` variables, determinant `(-3456)^(n+m)`, a zero exactly when the formula is satisfiable |
+| `threeSAT_reduces_with_one_checker` | The reduction at degree 3 with `n + 1` gadgets: `10n + ⌈m/2⌉ + 12` variables, constant nonzero Jacobian determinant, a zero exactly when the formula is satisfiable |
+| `det_programMap`, `programMap_eq_zero_iff` | Gadgets, any triangular computation on top of them, and one checking gadget: the determinant and the zeros |
+| `threeSAT_reduces_to_cubic_keller_zero` | Stambler's map lowered to degree 3: `10n + 13m` variables, determinant `(-3456)^(n+m)` |
 | `keller_zero_hard_exactly_from_degree_three` | Degree 2 is injective and degree 3 carries 3SAT, in one statement |
 | `threeSAT_reduces_to_keller_zero` | Stambler's theorem, degree 7 |
 | `pderiv_bind₁`, `det_wireExt`, `aeval_wireExt_eq_zero_iff` | The chain rule, and that adding wires changes neither the Jacobian determinant nor the zeros |
@@ -84,7 +89,7 @@ degree two (O5), and that a zero modulo a prime gives a complex zero (O7).
 ```bash
 git clone https://github.com/open-challenges/keller-zero && cd keller-zero
 python3 scripts/check_gadget.py submissions/*/gadget.json     # exact, no installs
-python3 scripts/lower_degree.py formula "1 2 3, -1 -2 -3"     # the map of a formula at degree 3
+python3 scripts/lower_degree.py compact "1 2 3, -1 -2 -3"     # the map of a formula at degree 3: 43 variables
 python3 scripts/witness.py                                    # short proofs that a zero exists
 python3 scripts/certificates.py && python3 scripts/recognition.py && python3 scripts/count_zeros.py
 cd lean && lake exe cache get && lake build && cd ..          # Lean through elan
