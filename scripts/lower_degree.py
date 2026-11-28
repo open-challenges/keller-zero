@@ -5,7 +5,9 @@
     python3 scripts/lower_degree.py gadget 4|5|6      # 7, 6 and 5 variables
     python3 scripts/lower_degree.py gadget eleven     # degree 3 with the wires of the published 11-variable map
     python3 scripts/lower_degree.py gadget twelve     # an earlier degree 3, with 12 variables
-    python3 scripts/lower_degree.py formula "1 2 3, -1 -2 -3"   # the map of the reduction at degree 3
+    python3 scripts/lower_degree.py formula "1 2 3, -1 -2 -3"   # Stambler's map of a formula, lowered to degree 3
+    python3 scripts/lower_degree.py compact "1 2 3, -1 -2 -3"   # a smaller map of the formula: one checking gadget
+    python3 scripts/lower_degree.py compact-sqrt "1 2 3, -1 -2 -3"   # the same with the fewest variables
 
 Prints a gadget.json. `formula` takes clauses of three literals, variable k as k and its
 negation as -k.
@@ -34,6 +36,7 @@ which stands for x z + 3 y and serves both Q and R = 2 x - x^2 (x z + 3 y). The 
 4, 5, 6 and the nine-wire variant `twelve` were also found for this repository.
 """
 import json
+import math
 import os
 import sys
 from fractions import Fraction
@@ -302,6 +305,115 @@ def formula(clauses):
     return L, coords, n, m
 
 
+def poly_from_roots(roots):
+    """Coefficients c[e] of X^e in the product of (X - r) over the roots."""
+    c = [1]
+    for r in roots:
+        c = [0] + c
+        for i in range(len(c) - 1):
+            c[i] -= r * c[i + 1]
+    return c
+
+
+BLOCK = ["x", "y", "z", "t1", "t2", "t3", "t4", "t5", "t6", "t7"]
+
+
+def compact(clauses, width=1):
+    """A map of degree 3 with constant Jacobian determinant that has a zero exactly when the
+    formula is satisfiable, built with n + 1 copies of the gadget whatever the number of clauses.
+
+    Variables: ten for each variable of the formula (a gadget); `width` powers p0 .. of the number
+    s of false clauses (p0 is s itself: its coordinate is p0 minus a polynomial of degree 3 in
+    the wires that hold x^2); a chain r0 = 1, r(i+1) = r(i) Q(2i)(s) Q(2i+1)(s), where
+    Q(i)(X) is the product of X - t over a block of `width` consecutive integers t, written as a
+    linear form in the powers; and ten for one more gadget that checks the result. The last r is
+    rho = (2 L width)! when s = 0 and 0 when s is one of 1 .. 2 L width, and the checking gadget
+    has the equations rho H(v) = (rho - r) (7, 24, 8), which have a solution in the first case
+    only. The count, the powers and the chain are a computation: each of their coordinates is
+    its own variable minus a polynomial in earlier variables, so they add a triangular block
+    with ones on the diagonal to the Jacobian matrix.
+
+    width = 1 is `compactMap` in lean/KellerZero/CompactReduction.lean: 10 n + ceil(m / 2) + 12
+    variables, small coefficients apart from rho. width about sqrt(m) has the fewest variables,
+    10 n + O(sqrt m), and larger coefficients."""
+    n = max(abs(l) for c in clauses for l in c)
+    m = len(clauses)
+    w = width
+    L = -(-m // (2 * w))
+    names = ["%s_%d" % (v, i) for i in range(1, n + 1) for v in BLOCK]
+    names += ["p%d" % j for j in range(w)] + ["r%d" % i for i in range(L + 1)] + ["%s_c" % v for v in BLOCK]
+    ring = Ring(names)
+    V = ring.var
+    template = Lowering(["x", "y", "z"], 7)
+    template_mains, _ = gadget_wires(template, "x", "y", "z", 3)
+    template_coords = [c.text() for c in template.finish(template_mains, 3)]
+
+    def block(tag):
+        out = []
+        for text in template_coords:
+            for name in sorted(BLOCK, key=len, reverse=True):
+                text = text.replace(name, "<%s>" % name)
+            for name in BLOCK:
+                text = text.replace("<%s>" % name, "%s_%s" % (name, tag))
+            out.append(ring.read(text))
+        return out
+
+    coords = []
+    for i in range(1, n + 1):
+        g = block(i)
+        coords += [12 * g[0] + 3, 12 * g[1], 12 * g[2]] + g[3:]
+    count = 0
+    for clause in clauses:
+        f = 1
+        for lit in clause:
+            h = V("t4_%d" % abs(lit))                         # holds x^2 at a zero
+            f = f * ((1 - h) if lit > 0 else h)
+        count = count + f
+    coords.append(V("p0") - count)
+    for j in range(1, w):
+        coords.append(V("p%d" % j) - V("p%d" % (j - 1)) * V("p0"))
+
+    def q(i):
+        c = poly_from_roots([i * w + j + 1 for j in range(w)])
+        return c[0] + sum(c[e] * V("p%d" % (e - 1)) for e in range(1, w + 1))
+
+    coords.append(V("r0") - 1)
+    for i in range(L):
+        coords.append(V("r%d" % (i + 1)) - V("r%d" % i) * q(2 * i) * q(2 * i + 1))
+    rho = math.factorial(2 * L * w)
+    last = V("r%d" % L)
+    g = block("c")
+    coords += [rho * (12 * g[0] + 3) - 7 * (rho - last), rho * 12 * g[1] - 24 * (rho - last),
+               rho * 12 * g[2] - 8 * (rho - last)] + g[3:]
+    worst = max(c.degree() for c in coords)
+    if worst > 3:
+        raise ValueError("degree %d" % worst)
+    return ring, coords, {"variables": n, "clauses": m, "width": w, "chain": L, "rho": rho}
+
+
+def above_block(p):
+    """The ten coordinates of a gadget block above the point p = (x, y, z)."""
+    x, y, z = (Fraction(v) for v in p)
+    return [x, y, z, x * y, x * z + 3 * y, -(x * x * y * y), x * x, x * y * z + 3 * y * y + z,
+            6 * x * x * y * z + 18 * x * y * y + 6 * x * z, 3 * x * x * y * y * z + 6 * x * y ** 3 + 6 * x * y * z + 7 * y * y]
+
+
+def compact_point(clauses, info, blocks, checker):
+    """The point of the compact map above the given block points: the computation variables
+    take the values their coordinates force."""
+    var = [above_block(p) for p in blocks]
+    s = sum(math.prod((1 - var[abs(l) - 1][6]) if l > 0 else var[abs(l) - 1][6] for l in c) for c in clauses)
+    w, L = info["width"], info["chain"]
+    powers = [Fraction(s) ** (j + 1) for j in range(w)]
+    r = [Fraction(1)]
+    for i in range(L):
+        value = r[-1]
+        for t in range(2 * i * w + 1, (2 * i + 2) * w + 1):
+            value *= (s - t)
+        r.append(value)
+    return [v for b in var for v in b] + powers + r + above_block(checker)
+
+
 def main(argv):
     if len(argv) == 2 and argv[0] == "gadget" and argv[1] in ("3", "4", "5", "6", "eleven", "twelve"):
         print(json.dumps(gadget(int(argv[1]) if argv[1].isdigit() else argv[1]), indent=2))
@@ -314,6 +426,17 @@ def main(argv):
         L, coords, n, m = formula(clauses)
         print(json.dumps({"variables": L.ring.names, "map": [c.text() for c in coords],
                           "formula": clauses, "blocks": {"variables": n, "clauses": m}}, indent=2))
+        return 0
+    if len(argv) == 2 and argv[0] in ("compact", "compact-sqrt"):
+        clauses = [tuple(int(l) for l in c.split()) for c in argv[1].split(",")]
+        if not clauses or any(len(c) != 3 or 0 in c for c in clauses):
+            print("clauses of three nonzero literals, separated by commas", file=sys.stderr)
+            return 2
+        width = 1 if argv[0] == "compact" else math.isqrt(len(clauses)) + 1
+        ring, coords, info = compact(clauses, width)
+        info["rho"] = str(info["rho"])
+        print(json.dumps({"variables": ring.names, "map": [c.text() for c in coords],
+                          "formula": clauses, "construction": info}, indent=2))
         return 0
     print(__doc__)
     return 2

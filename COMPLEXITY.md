@@ -60,16 +60,19 @@ impossible, and it is only about three weak proof systems.
 
 ## 2. Zeros: nothing at degree 2, NP-hard at degree 3
 
-**Theorem 1 (Lean: `threeSAT_reduces_to_cubic_keller_zero`).** For every 3CNF formula `φ` with
-`n` variables and `m` clauses there is a map `cubicReduction φ` of `10n + 13m` polynomials in as
-many variables, with integer coefficients, such that
+**Theorem 1 (Lean: `threeSAT_reduces_with_one_checker`).** For every 3CNF formula `φ` with
+`n` variables and `m` clauses there is a map of `10n + ⌈m/2⌉ + 12` polynomials in as many
+variables, with integer coefficients, such that
 
 1. every coordinate has total degree at most 3,
-2. the Jacobian determinant is the constant `(-3456)^(n+m)`,
+2. the Jacobian determinant is a nonzero constant, `(-3456)^(n+1)·((2⌈m/2⌉)!)³`,
 3. over every field of characteristic zero, the map has a zero exactly when `φ` is satisfiable.
 
-The map is computed from `φ` in linear time; its coefficients are at most 144 in absolute value
-and a coordinate has at most 23 terms (Computed: `scripts/lower_degree.py formula`).
+The map is computed from `φ` in polynomial time. A second map with the same three properties,
+`cubicReduction φ` (Lean: `threeSAT_reduces_to_cubic_keller_zero`), is Stambler's map lowered
+to degree 3: `10n + 13m` variables, Jacobian determinant `(-3456)^(n+m)`, coefficients at most
+144 in absolute value and at most 23 terms per coordinate (Computed:
+`scripts/lower_degree.py formula`).
 
 **Degree 2 (Lean: `Proofs.QuadraticKellerMapsAreInjective`; Known: Wang, 1980).** A map of
 degree at most 2 with constant nonzero Jacobian determinant is injective, and in fact has a
@@ -80,7 +83,34 @@ halves together.
 Because (3) holds over every field of characteristic zero, the real, the rational and the
 complex zero problems are all NP-hard at degree 3.
 
-*How the map is built.* Stambler's map `K_φ` has degree 7: a copy of Alpöge's map for every
+*A computation costs no gadget.* The gadget is needed where something is chosen, because a
+choice needs a map that is not injective: one copy per variable of the formula. It is needed
+once more where the result is checked, because a failed check needs a target that the map
+omits. Everything in between can be a computation. Give each intermediate quantity a variable
+`c` and the coordinate `c - (a polynomial of degree at most 3 in earlier variables)`. These
+coordinates form a triangular block of the Jacobian matrix with ones on the diagonal, so the
+determinant does not change, and at a zero each `c` holds the value of its polynomial
+(Lean: `det_programMap`, `programMap_eq_zero_iff`, for any such computation).
+
+For a formula the computation is: one variable `s` for the number of false clauses, which is a
+polynomial of degree 3 in the wires that hold `x²`; then a chain `r₀ = 1`,
+`r_{i+1} = r_i (2i + 1 - s)(2i + 2 - s)`, so that the last `r` is `ρ = (2L)!` when `s = 0` and
+`0` when `s` is one of `1, …, 2L`; then one gadget with the equations
+`ρ·H(v) = (ρ - r_L)·(7, 24, 8)`, which have a solution in the first case and none in the
+second. So the map has `n + 1` gadgets, whatever `m` is.
+
+Two remarks. First, the same construction turns any Boolean circuit into a map of degree 3:
+ten variables per input, one per gate, ten for the check (Paper; the Lean theorems above are
+stated for an arbitrary computation). Second, the test "is `s` zero?" for `s` in `0, …, m`
+needs a polynomial of degree `m` in `s`, and such a polynomial can be evaluated with about
+`√m` multiplications: keep `s, s², …, s^w` and use linear forms in them. That brings the map
+down to `10n + O(√m)` variables, at the price of coefficients with about `√m·log m` digits
+(Computed: `scripts/lower_degree.py compact-sqrt`). Doing it with `O(log m)` multiplications
+would need a multiple of `(s-1)(s-2)⋯(s-m)` with a short straight-line program, which is the
+kind of polynomial whose existence would make factoring integers easy (Known: Lipton, 1994;
+cited from memory), so we do not expect it.
+
+*The earlier map.* Stambler's map `K_φ` has degree 7: a copy of Alpöge's map for every
 variable and every clause, and a product of three literal values in every clause block. A
 *wire extension* (Lean: [`Wire.lean`](lean/KellerZero/Wire.lean)) adds variables `t_c` and
 coordinates `s_c = t_c + (a polynomial in the old variables and earlier wires)`, and subtracts
@@ -178,6 +208,10 @@ Jacobian determinant is #P-hard.
 coordinate `0` (false) or `±1` (true), and a clause block is one of the same three points when
 its clause is satisfied and does not exist otherwise. A wire extension adds no zeros and
 removes none, since each wire variable is determined by the earlier ones. ∎
+
+The map of Theorem 1 has one checking gadget instead of `m`, so it has
+`3 · Σ 2^(number of variables true in σ)` zeros, and `3 · 2^n · #SAT(φ)` for the formula with
+twins (Computed on small formulas: `scripts/test_lower_degree.py`).
 
 ## 5. Recognising a Keller map is identity testing
 
@@ -313,8 +347,9 @@ the formula.
 2. Is "not injective" NP-hard for Keller maps (§7)?
 3. Is the real zero problem for Keller maps in NP? The rational one? Neither has the modular
    witness.
-4. Fewer variables at degree 3 (the record is 10), and in the reduction (10 per variable, 13
-   per clause).
+4. Fewer variables at degree 3 (the record is 10), and in the reduction: `10n + ⌈m/2⌉ + 12`
+   in Lean, `10n + O(√m)` computed. Two gadgets have nine states, enough for three variables
+   of the formula, which would give about `7.7n`; this is not built.
 5. A lower bound on certificates in a proof system stronger than the three of §6.
 
 ## 9. What was not checked

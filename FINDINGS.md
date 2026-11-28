@@ -20,10 +20,27 @@ starts, and how hard it is.
 
 ## 1. 3SAT reduces to the zero problem at degree 3, and this is checked in Lean
 
-**Theorem (Lean: `threeSAT_reduces_to_cubic_keller_zero`).** For every 3CNF formula with `n`
-variables and `m` clauses, `cubicReduction φ` is a map of `10n + 13m` integer polynomials in as
-many variables, each of degree at most 3, whose Jacobian determinant is `(-3456)^(n+m)`, and
-which has a zero over any field of characteristic zero exactly when the formula is satisfiable.
+**Theorem (Lean: `threeSAT_reduces_with_one_checker`).** For every 3CNF formula with `n`
+variables and `m` clauses there is a map of `10n + ⌈m/2⌉ + 12` integer polynomials in as many
+variables, each of degree at most 3, whose Jacobian determinant is a nonzero constant, and which
+has a zero over any field of characteristic zero exactly when the formula is satisfiable.
+
+It uses `n + 1` copies of the gadget whatever the number of clauses: one per variable of the
+formula and one that checks the result. Between them is a computation (count the false clauses,
+then test whether the count is zero), and **a computation costs no gadget**: a new variable `c`
+with the coordinate `c - (a polynomial in earlier variables)` only adds a `1` to the diagonal of
+a triangular block of the Jacobian matrix (Lean: `det_programMap`).
+
+An earlier form, `threeSAT_reduces_to_cubic_keller_zero` (Lean), lowers Stambler's own map to
+degree 3 and keeps his gadget per clause: `10n + 13m` variables, Jacobian determinant
+`(-3456)^(n+m)`. For three variables and two clauses that is 56 variables against 43; for a
+formula with `m = 4n` clauses, `62n` against `12n + 12`.
+
+With the same idea and more arithmetic the clauses cost `O(√m)` variables instead of `m/2`:
+keep the powers `s, s², …, s^w` of the count, `w ≈ √m`, and test `w` values of the count with
+each linear form in them (Computed: `scripts/lower_degree.py compact-sqrt`, exact determinant
+and zero counts in `scripts/test_lower_degree.py`; not in Lean). The price is larger
+coefficients.
 
 Stambler's map has degree 7. A map of degree 2 with constant nonzero Jacobian determinant is
 injective (Lean) and bijective (Known: Wang, 1980), so 3 is the least degree at which the
@@ -35,7 +52,9 @@ question can be hard. `keller_zero_hard_exactly_from_degree_three` states both h
 | A map of degree 3 in ten variables, a wire extension of the gadget with seven wires: determinant `-2`, degree 3, not injective (`det_cubic10Map`, `totalDegree_cubic10Map`, `cubic10Map_not_injective`) | Lean; the map is new (§4) |
 | The same for the eleven-variable map of 20 July 2026 (`det_cubic11Map`, `cubic11Map_not_injective`) | Lean; the map is Known |
 | Three more wires per clause carry the product of three literal values at degree 3 (`bind₁_prodS`, `totalDegree_remainder`) | Lean |
-| The same map built independently and its determinant expanded exactly, for two formulas | Computed: `scripts/test_lower_degree.py` |
+| `n` gadgets, any triangular computation on them, and one checking gadget: the Jacobian determinant, the degree and the zeros (`det_programMap`, `totalDegree_programMap`, `programMap_eq_zero_iff`) | Lean |
+| The count of false clauses and the chain that tests it (`aeval_count`, `chain_eq`, `sat_of_zero`, `zero_of_sat`) | Lean |
+| Both maps built independently, their determinants expanded exactly and their zeros counted, for small formulas | Computed: `scripts/test_lower_degree.py` |
 
 That a counterexample of degree 3 exists in some dimension follows from Bass, Connell and
 Wright (1982), and explicit ones were published in July 2026. What we did not find anywhere is
