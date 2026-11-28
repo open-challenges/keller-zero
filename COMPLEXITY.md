@@ -110,6 +110,11 @@ would need a multiple of `(s-1)(s-2)⋯(s-m)` with a short straight-line program
 kind of polynomial whose existence would make factoring integers easy (Known: Lipton, 1994;
 cited from memory), so we do not expect it.
 
+At degree 7, with the three-variable gadget and no wires, the same construction has
+`3n + ⌈m/6⌉ + 5` variables, against the `3n + 3m` of Stambler's map: the count is a polynomial
+of degree 6 in the first variables of the blocks, and a chain variable takes six factors at a
+time (Computed: `scripts/lower_degree.py compact7`).
+
 *The earlier map.* Stambler's map `K_φ` has degree 7: a copy of Alpöge's map for every
 variable and every clause, and a product of three literal values in every clause block. A
 *wire extension* (Lean: [`Wire.lean`](lean/KellerZero/Wire.lean)) adds variables `t_c` and

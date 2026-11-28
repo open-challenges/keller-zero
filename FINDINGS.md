@@ -42,6 +42,12 @@ each linear form in them (Computed: `scripts/lower_degree.py compact-sqrt`, exac
 and zero counts in `scripts/test_lower_degree.py`; not in Lean). The price is larger
 coefficients.
 
+At Stambler's own degree the same idea needs no lowering at all: with his three-variable
+gadget, `3n + ⌈m/6⌉ + 5` variables at degree 7 against his `3n + 3m` (Computed:
+`scripts/lower_degree.py compact7`, exact determinant and zero counts in
+`scripts/test_lower_degree.py`; not in Lean). So his theorem is improved on both counts: fewer
+variables at his degree, and the least possible degree.
+
 Stambler's map has degree 7. A map of degree 2 with constant nonzero Jacobian determinant is
 injective (Lean) and bijective (Known: Wang, 1980), so 3 is the least degree at which the
 question can be hard. `keller_zero_hard_exactly_from_degree_three` states both halves.
